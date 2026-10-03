@@ -1,0 +1,36 @@
+{% extends 'base.html' %}{% block title %}Register – SmartTourist{% endblock %}
+{% block content %}
+<section class="auth-section">
+<div class="container">
+<div class="auth-card" style="max-width:560px;">
+  <div class="text-center mb-4">
+    <i class="fas fa-compass" style="font-size:2rem;color:var(--primary);"></i>
+    <h2 class="mt-2 mb-1" style="font-family:var(--ff-head);">Join SmartTourist</h2>
+    <p class="text-muted" style="font-size:.9rem;">Create your account and start exploring</p>
+  </div>
+  <form method="post" action="/accounts/register/">{% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label fw-bold">I want to join as: *</label>
+      <div class="row g-2">
+        <div class="col-6 col-md-3"><label class="role-opt"><input type="radio" name="role" value="tourist" checked><div class="ri">🧳</div><div style="font-size:.82rem;font-weight:600;">Tourist</div></label></div>
+        <div class="col-6 col-md-3"><label class="role-opt"><input type="radio" name="role" value="vehicle_owner"><div class="ri">🚗</div><div style="font-size:.82rem;font-weight:600;">Vehicle Owner</div></label></div>
+        <div class="col-6 col-md-3"><label class="role-opt"><input type="radio" name="role" value="hotel_owner"><div class="ri">🏨</div><div style="font-size:.82rem;font-weight:600;">Hotel Owner</div></label></div>
+        <div class="col-6 col-md-3"><label class="role-opt"><input type="radio" name="role" value="guide"><div class="ri">🧭</div><div style="font-size:.82rem;font-weight:600;">Tour Guide</div></label></div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label">First Name *</label><input type="text" name="first_name" class="form-control" required></div>
+      <div class="col-6"><label class="form-label">Last Name *</label><input type="text" name="last_name" class="form-control" required></div>
+      <div class="col-12"><label class="form-label">Username *</label><input type="text" name="username" class="form-control" required></div>
+      <div class="col-12"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" required></div>
+      <div class="col-12"><label class="form-label">Phone</label><input type="tel" name="phone" class="form-control" placeholder="+91 XXXXX XXXXX"></div>
+      <div class="col-6"><label class="form-label">Password *</label><input type="password" name="password" class="form-control" required minlength="8"></div>
+      <div class="col-6"><label class="form-label">Confirm *</label><input type="password" name="confirm_password" class="form-control" required></div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="fas fa-user-plus me-2"></i>Create Account</button>
+  </form>
+  <div class="text-center mt-3" style="font-size:.88rem;">Already have an account? <a href="/accounts/login/">Sign In</a></div>
+</div>
+</div>
+</section>
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% block title %}SmartTourist – AI-Powered Travel & Rental Platform{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <div class="row align-items-center" style="min-height:80vh">
+      <div class="col-lg-7">
+        <div class="hero-badge"><i class="fas fa-robot me-2"></i>AI-Powered Smart Tourism</div>
+        <h1 class="hero-title">Explore India's<br><span class="hero-hl">Most Beautiful</span><br>Destinations</h1>
+        <p class="hero-sub">Rent vehicles, book hotels, hire local guides and let AI plan your perfect trip — all in one place.</p>
+        <div class="hero-search">
+          <div class="search-tabs">
+            <button class="s-tab active" data-target="vehicles">🚗 Vehicles</button>
+            <button class="s-tab" data-target="hotels">🏨 Hotels</button>
+            <button class="s-tab" data-target="guides">🧭 Guides</button>
+          </div>
+          <form action="/vehicles/" method="get">
+            <div class="search-row">
+              <div class="s-field">
+                <i class="fas fa-map-marker-alt"></i>
+                <select name="location" class="s-select">
+                  <option value="">Select Destination</option>
+                  {% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}, {{ loc.state }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="s-field">
+                <i class="fas fa-calendar"></i>
+                <input type="date" name="date" class="s-input">
+              </div>
+              <button type="submit" class="s-btn"><i class="fas fa-search me-2"></i>Search</button>
+            </div>
+          </form>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item"><div class="stat-num">{{ total_vehicles }}+</div><div class="stat-lbl">Vehicles</div></div>
+          <div class="stat-div"></div>
+          <div class="stat-item"><div class="stat-num">{{ total_hotels }}+</div><div class="stat-lbl">Hotels</div></div>
+          <div class="stat-div"></div>
+          <div class="stat-item"><div class="stat-num">{{ total_guides }}+</div><div class="stat-lbl">Guides</div></div>
+          <div class="stat-div"></div>
+          <div class="stat-item"><div class="stat-num">6</div><div class="stat-lbl">Destinations</div></div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="weather-widget">
+          <div class="weather-hdr">
+            <i class="fas fa-cloud-sun"></i> Live Weather
+            <select id="wLocSel" onchange="loadWeather(this.value)">
+              {% for loc in locations %}<option value="{{ loc.name }}">{{ loc.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div id="weatherData"><div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Destinations -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="s-badge">Popular Destinations</span>
+      <h2 class="s-title">Where Do You Want to Go?</h2>
+      <p class="s-sub">Handpicked destinations with the best travel experiences</p>
+    </div>
+    <div class="row g-4">
+      {% for loc in locations %}
+      <div class="col-lg-4 col-md-6">
+        <div class="dest-card" onclick="window.location='/vehicles/?location={{ loc.id }}'">
+          <div class="dest-img-wrap">
+            {% if loc.image %}<img src="{{ loc.image.url }}" alt="{{ loc.name }}" class="dest-img">
+            {% else %}<div class="dest-ph">{% if loc.name == 'Goa' %}🌊{% elif loc.name == 'Mysore' %}🏯{% elif loc.name == 'Coorg' %}☕{% elif loc.name == 'Ooty' %}🌸{% elif loc.name == 'Manali' %}❄️{% else %}🌴{% endif %}</div>{% endif %}
+            <div class="dest-overlay">
+              <div>
+                <h4 class="dest-name">{{ loc.name }}</h4>
+                <p class="dest-state"><i class="fas fa-map-marker-alt me-1"></i>{{ loc.state }}</p>
+                <div class="dest-meta">
+                  <span><i class="fas fa-car me-1"></i>{{ loc.vehicles.count }} Vehicles</span>
+                  <span><i class="fas fa-hotel me-1"></i>{{ loc.hotels.count }} Hotels</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dest-footer">
+            <p class="dest-desc mb-2">{{ loc.description|truncatechars:90 }}</p>
+            <a href="/vehicles/?location={{ loc.id }}" class="btn btn-sm btn-outline-primary">Explore →</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="s-badge">Our Services</span>
+      <h2 class="s-title">Everything for the Perfect Trip</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3"><div class="svc-card text-center h-100"><div class="svc-icon v"><i class="fas fa-motorcycle"></i></div><h5>Vehicle Rental</h5><p class="text-muted small">Bikes, scooters, cars and SUVs. Hourly or daily.</p><a href="/vehicles/" class="btn btn-sm btn-outline-primary">Browse</a></div></div>
+      <div class="col-md-3"><div class="svc-card text-center h-100"><div class="svc-icon h"><i class="fas fa-bed"></i></div><h5>Hotel Booking</h5><p class="text-muted small">Budget to luxury. All verified by real travellers.</p><a href="/hotels/" class="btn btn-sm btn-outline-primary">Browse</a></div></div>
+      <div class="col-md-3"><div class="svc-card text-center h-100"><div class="svc-icon g"><i class="fas fa-user-tie"></i></div><h5>Tour Guides</h5><p class="text-muted small">Certified local experts. Multilingual guides.</p><a href="/guides/" class="btn btn-sm btn-outline-primary">Browse</a></div></div>
+      <div class="col-md-3"><div class="svc-card ai-card text-center h-100"><div class="svc-icon ai"><i class="fas fa-robot"></i></div><h5>AI Trip Planner</h5><p class="text-muted small">Smart itineraries tailored to your budget.</p><a href="/ai/trip-planner/" class="btn btn-sm btn-primary">Plan Trip →</a></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Vehicles -->
+{% if feat_vehicles %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div><span class="s-badge">Featured</span><h2 class="s-title mb-0">Top Rated Vehicles</h2></div>
+      <a href="/vehicles/" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for v in feat_vehicles %}
+      <div class="col-lg-4 col-md-6">
+        <div class="listing-card">
+          <div class="listing-img-wrap">
+            {% if v.thumbnail %}<img src="{{ v.thumbnail.url }}" alt="{{ v.name }}" class="listing-img">
+            {% else %}<i class="fas fa-car fa-3x text-muted opacity-25"></i>{% endif %}
+            <div class="listing-badges"><span class="badge bg-primary">{{ v.get_vehicle_type_display }}</span>{% if v.is_featured %}<span class="badge bg-warning text-dark">Featured</span>{% endif %}</div>
+            <button class="btn-fav" onclick="toggleFav('vehicle',{{ v.id }},this)"><i class="far fa-heart"></i></button>
+          </div>
+          <div class="listing-body">
+            <div class="listing-loc"><i class="fas fa-map-marker-alt me-1"></i>{{ v.location }}</div>
+            <h5 class="listing-title">{{ v.brand }} {{ v.model }}</h5>
+            <div class="listing-meta">
+              <span><i class="fas fa-gas-pump me-1"></i>{{ v.get_fuel_type_display }}</span>
+              <span><i class="fas fa-users me-1"></i>{{ v.seating_capacity }} seats</span>
+              <span><i class="fas fa-cog me-1"></i>{{ v.get_transmission_display }}</span>
+            </div>
+            <div class="listing-footer">
+              <div><span class="price-main">₹{{ v.price_per_day }}</span><span class="price-unit">/day</span></div>
+              <div class="ms-auto" style="font-size:.88rem;"><i class="fas fa-star text-warning"></i> {{ v.avg_rating|floatformat:1 }}</div>
+              <a href="/vehicles/{{ v.id }}/" class="btn btn-sm btn-primary">Book</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Featured Hotels -->
+{% if feat_hotels %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div><span class="s-badge">Top Picks</span><h2 class="s-title mb-0">Featured Hotels</h2></div>
+      <a href="/hotels/" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for h in feat_hotels %}
+      <div class="col-lg-4 col-md-6">
+        <div class="listing-card">
+          <div class="listing-img-wrap">
+            {% if h.thumbnail %}<img src="{{ h.thumbnail.url }}" alt="{{ h.name }}" class="listing-img">
+            {% else %}<i class="fas fa-hotel fa-3x text-muted opacity-25"></i>{% endif %}
+            <div class="listing-badges"><span class="badge bg-success">{{ h.get_category_display }}</span><span class="badge bg-warning text-dark">{{ h.star_rating }}★</span></div>
+          </div>
+          <div class="listing-body">
+            <div class="listing-loc"><i class="fas fa-map-marker-alt me-1"></i>{{ h.city }}, {{ h.location }}</div>
+            <h5 class="listing-title">{{ h.name }}</h5>
+            <div class="d-flex flex-wrap gap-1 mb-2">{% for a in h.get_amenities_list|slice:":4" %}<span class="tag">{{ a }}</span>{% endfor %}</div>
+            <div class="listing-footer">
+              <div><small class="text-muted">from</small> <span class="price-main">₹{{ h.min_price }}</span><span class="price-unit">/night</span></div>
+              <div class="ms-auto" style="font-size:.88rem;"><i class="fas fa-star text-warning"></i> {{ h.avg_rating|floatformat:1 }}</div>
+              <a href="/hotels/{{ h.slug }}/" class="btn btn-sm btn-primary">Rooms</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- AI CTA -->
+<section class="py-5">
+  <div class="container">
+    <div class="ai-cta">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="hero-badge mb-3"><i class="fas fa-robot me-2"></i>Powered by AI</div>
+          <h2 class="ai-title">Let AI Plan Your Perfect Trip</h2>
+          <p class="ai-desc">Tell us your budget, days and destination. Our AI generates a complete itinerary with hotel suggestions, vehicle picks and day-by-day activities.</p>
+          <div class="ai-feats mb-3">
+            <span><i class="fas fa-check-circle"></i> Smart Itinerary</span>
+            <span><i class="fas fa-check-circle"></i> Budget Breakdown</span>
+            <span><i class="fas fa-check-circle"></i> Hotel & Vehicle Picks</span>
+            <span><i class="fas fa-check-circle"></i> Travel Tips</span>
+          </div>
+          <a href="/ai/trip-planner/" class="btn btn-light btn-lg"><i class="fas fa-magic me-2"></i>Generate My Trip Plan</a>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block" style="font-size:8rem;opacity:.15;">🤖</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Guides -->
+{% if feat_guides %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div><span class="s-badge">Local Experts</span><h2 class="s-title mb-0">Top Tour Guides</h2></div>
+      <a href="/guides/" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for g in feat_guides %}
+      <div class="col-lg-3 col-md-6">
+        <div class="guide-card h-100">
+          <div class="guide-wrap mb-2">
+            {% if g.profile_image %}<img src="{{ g.profile_image.url }}" class="guide-img">
+            {% else %}<div class="guide-ph">{{ g.user.first_name.0 }}{{ g.user.last_name.0 }}</div>{% endif %}
+            <div class="guide-badge"><i class="fas fa-check" style="font-size:.55rem;"></i></div>
+          </div>
+          <h5 style="font-size:1.05rem;margin-bottom:2px;">{{ g.name }}</h5>
+          <p class="text-muted" style="font-size:.82rem;margin-bottom:.5rem;">{{ g.get_expertise_display }}</p>
+          <div class="d-flex justify-content-center flex-wrap gap-1 mb-2">{% for l in g.get_languages_list|slice:":3" %}<span class="lang-tag">{{ l }}</span>{% endfor %}</div>
+          <div class="guide-stats mb-2">
+            <span><i class="fas fa-star text-warning"></i> {{ g.avg_rating|floatformat:1 }}</span>
+            <span><i class="fas fa-compass text-primary"></i> {{ g.total_tours }}</span>
+            <span><i class="fas fa-clock text-success"></i> {{ g.years_experience }}y</span>
+          </div>
+          <div class="price-main" style="font-size:1.2rem;">₹{{ g.price_per_day }}<span class="price-unit">/day</span></div>
+          <a href="/guides/{{ g.id }}/" class="btn btn-sm btn-outline-primary w-100 mt-2">Book Guide</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- How it Works -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5"><span class="s-badge">Simple Process</span><h2 class="s-title">How It Works</h2></div>
+    <div class="row g-4">
+      {% for step in "1234" %}
+      <div class="col-md-3 text-center">
+        <div class="step-card">
+          <div class="step-num">0{{ forloop.counter }}</div>
+          <div class="step-icon">
+            {% if forloop.counter == 1 %}<i class="fas fa-search"></i>
+            {% elif forloop.counter == 2 %}<i class="fas fa-calendar-check"></i>
+            {% elif forloop.counter == 3 %}<i class="fas fa-robot"></i>
+            {% else %}<i class="fas fa-plane-departure"></i>{% endif %}
+          </div>
+          <h5>{% if forloop.counter == 1 %}Search{% elif forloop.counter == 2 %}Book{% elif forloop.counter == 3 %}Plan{% else %}Travel{% endif %}</h5>
+          <p class="text-muted small">{% if forloop.counter == 1 %}Choose destination, browse vehicles, hotels and guides{% elif forloop.counter == 2 %}Select dates, pay securely, get instant confirmation{% elif forloop.counter == 3 %}Use AI planner to get smart itinerary{% else %}Enjoy your trip with everything pre-arranged{% endif %}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const sel = document.getElementById('wLocSel');
+  if(sel) loadWeather(sel.value);
+});
+</script>
+{% endblock %}

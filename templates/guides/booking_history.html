@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block title %}My Guide Bookings{% endblock %}{% block content %}
+<div class="container py-4"><h2 class="mb-4" style="font-family:var(--ff-head);">My Guide Bookings</h2>
+{% if bookings %}<div class="chart-card"><div class="table-responsive"><table class="smart-table w-100"><thead><tr><th>ID</th><th>Guide</th><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+{% for b in bookings %}<tr><td><code>{{ b.booking_id }}</code></td><td>{{ b.guide.name }}</td><td>{{ b.start_datetime|date:"d M Y" }}</td><td>{{ b.get_booking_type_display }}</td><td><strong>₹{{ b.total_amount }}</strong></td><td><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span></td><td>{% if b.status in 'pending,confirmed' %}<a href="/guides/cancel/{{ b.booking_id }}/" class="btn btn-sm btn-outline-danger">Cancel</a>{% else %}<span class="text-muted">—</span>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% else %}<div class="text-center py-5 text-muted"><i class="fas fa-user-tie fa-4x mb-3 d-block opacity-25"></i><h5>No guide bookings yet</h5><a href="/guides/" class="btn btn-primary mt-2">Find Guides</a></div>{% endif %}
+</div>{% endblock %}

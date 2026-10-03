@@ -1,0 +1,13 @@
+<div style="padding:1rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;"><div style="font-size:1rem;font-weight:700;color:#fff;"><i class="fas fa-compass me-2" style="color:#f4a024;"></i>Admin Panel</div><div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px;">{{ request.user.get_full_name }}</div></div>
+<span class="as-lbl">Overview</span>
+<a href="/admin-panel/" {% if active_nav == 'dashboard' %}class="active"{% endif %}><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+<a href="/admin-panel/bookings/" {% if active_nav == 'bookings' %}class="active"{% endif %}><i class="fas fa-calendar-check"></i> All Bookings</a>
+<span class="as-lbl">Approvals</span>
+<a href="/admin-panel/approvals/#pendingVehicles" {% if active_nav == 'approvals' %}class="active"{% endif %}><i class="fas fa-car"></i> Vehicles <span class="pdot"></span></a>
+<a href="/admin-panel/approvals/#pendingHotels" {% if active_nav == 'approvals' %}class="active"{% endif %}><i class="fas fa-hotel"></i> Hotels <span class="pdot"></span></a>
+<a href="/admin-panel/approvals/#pendingGuides" {% if active_nav == 'approvals' %}class="active"{% endif %}><i class="fas fa-user-tie"></i> Guides <span class="pdot"></span></a>
+<span class="as-lbl">Management</span>
+<a href="/admin-panel/users/" {% if active_nav == 'users' %}class="active"{% endif %}><i class="fas fa-users"></i> Users</a>
+<span class="as-lbl">System</span>
+<a href="/django-admin/"><i class="fas fa-cog"></i> Django Admin</a>
+<a href="{% url 'home' %}"><i class="fas fa-home"></i> View Site</a>

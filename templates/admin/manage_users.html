@@ -1,0 +1,82 @@
+{% extends 'base.html' %}{% block title %}Manage Users – Admin{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    {% include 'admin/_sidebar.html' with active_nav='users' %}
+  </aside>
+  <div class="admin-main">
+    <button class="admin-mobile-toggle d-lg-none mb-3" onclick="toggleAdminSidebar()"><i class="fas fa-bars me-2"></i>Menu</button>
+    
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <h1 class="admin-title mb-0" style="margin-bottom:0 !important;">Manage Users</h1>
+      <form method="get" class="d-flex gap-2 align-items-center" style="max-width: 600px; flex-grow: 1; justify-content: flex-end;">
+        <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Search name or email…" style="max-width: 250px;">
+        <select name="role" class="form-select form-select-sm" onchange="this.form.submit()" style="max-width: 150px;">
+          <option value="">All Roles</option>
+          {% for v,l in roles %}<option value="{{ v }}" {% if role_filter == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm px-3">Search</button>
+      </form>
+    </div>
+
+    <!-- Users table -->
+    <div class="chart-card" style="padding:.75rem 1rem;">
+      <div class="table-responsive">
+        <table class="smart-table w-100" style="font-size:.82rem;">
+          <thead>
+            <tr><th>#</th><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            {% for u in page_obj %}
+            <tr>
+              <td style="color:var(--muted);">{{ u.id }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-circle" style="width:26px;height:26px;font-size:.7rem;flex-shrink:0;">{{ u.first_name.0 }}</div>
+                  <div>
+                    <div style="font-weight:600;font-size:.82rem;">{{ u.get_full_name }}</div>
+                    <div style="font-size:.72rem;color:var(--muted);">@{{ u.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:.8rem;">{{ u.email }}</td>
+              <td>
+                <span class="badge {% if u.role == 'admin' %}bg-danger{% elif u.role == 'tourist' %}bg-primary{% elif u.role == 'vehicle_owner' %}bg-warning text-dark{% elif u.role == 'hotel_owner' %}bg-success{% else %}bg-info{% endif %}" style="font-size:.7rem;">
+                  {{ u.get_role_display }}
+                </span>
+              </td>
+              <td style="font-size:.78rem;white-space:nowrap;">{{ u.date_joined|date:"d M Y" }}</td>
+              <td>
+                {% if u.is_blocked %}<span class="sbadge sb-cancelled" style="font-size:.72rem;">Blocked</span>
+                {% else %}<span class="sbadge sb-confirmed" style="font-size:.72rem;">Active</span>{% endif %}
+              </td>
+              <td>
+                <button class="btn btn-sm {% if u.is_blocked %}btn-success{% else %}btn-danger{% endif %}" style="padding:2px 10px;font-size:.75rem;" onclick="toggleBlock({{ u.id }},this)">
+                  {% if u.is_blocked %}Unblock{% else %}Block{% endif %}
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-3">No users found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj.has_other_pages %}
+      <nav class="mt-2">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search }}&role={{ role_filter }}">‹</a></li>{% endif %}
+          {% for n in page_obj.paginator.page_range %}
+            {% if page_obj.number == n %}<li class="page-item active"><span class="page-link">{{ n }}</span></li>
+            {% elif n > page_obj.number|add:"-3" and n < page_obj.number|add:"3" %}<li class="page-item"><a class="page-link" href="?page={{ n }}&q={{ search }}&role={{ role_filter }}">{{ n }}</a></li>{% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search }}&role={{ role_filter }}">›</a></li>{% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard – SmartTourist{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h2 style="font-family:var(--ff-head);">Welcome, {{ user.first_name }}! 👋</h2><p class="text-muted mb-0">Your bookings and travel overview</p></div>
+    <a href="/ai/trip-planner/" class="btn btn-primary"><i class="fas fa-magic me-2"></i>Plan New Trip</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon p"><i class="fas fa-car"></i></div><div><div class="sc-val">{{ total_vb }}</div><div class="sc-lbl">Vehicle Bookings</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon s"><i class="fas fa-hotel"></i></div><div><div class="sc-val">{{ total_hb }}</div><div class="sc-lbl">Hotel Bookings</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon a"><i class="fas fa-map"></i></div><div><div class="sc-val">{{ total_gb }}</div><div class="sc-lbl">Guide Bookings</div></div></div></div>
+    <div class="col-6 col-lg-3"><a href="/notifications/" class="text-decoration-none"><div class="stat-card" style="cursor: pointer;"><div class="sc-icon i"><i class="fas fa-bell"></i></div><div><div class="sc-val">{{ unread }}</div><div class="sc-lbl text-muted">Unread Notifications</div></div></div></a></div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Vehicle bookings -->
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="chart-title mb-0"><i class="fas fa-car text-primary me-2"></i>Recent Vehicle Bookings</div>
+          <a href="/vehicles/my-bookings/" class="btn btn-sm btn-outline-primary">All</a>
+        </div>
+        {% if vehicle_bookings %}{% for b in vehicle_bookings %}
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <div><div class="fw-bold" style="font-size:.9rem;">{{ b.vehicle.brand }} {{ b.vehicle.model }}</div><small class="text-muted">{{ b.start_datetime|date:"d M Y" }} → {{ b.end_datetime|date:"d M Y" }}</small><br><code style="font-size:.75rem;">{{ b.booking_id }}</code></div>
+          <div class="text-end"><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span><div class="fw-bold text-primary mt-1" style="font-size:.9rem;">₹{{ b.total_amount }}</div></div>
+        </div>
+        {% endfor %}{% else %}<div class="text-center py-4 text-muted"><i class="fas fa-car fa-2x mb-2 d-block opacity-25"></i>No vehicle bookings yet<br><a href="/vehicles/" class="btn btn-sm btn-primary mt-2">Browse Vehicles</a></div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Hotel bookings -->
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="chart-title mb-0"><i class="fas fa-hotel text-success me-2"></i>Recent Hotel Bookings</div>
+          <a href="/hotels/my-bookings/" class="btn btn-sm btn-outline-success">All</a>
+        </div>
+        {% if hotel_bookings %}{% for b in hotel_bookings %}
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <div><div class="fw-bold" style="font-size:.9rem;">{{ b.hotel.name }}</div><small class="text-muted">{{ b.check_in_date|date:"d M" }} → {{ b.check_out_date|date:"d M Y" }} ({{ b.nights }}n)</small></div>
+          <div class="text-end"><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span><div class="fw-bold text-success mt-1" style="font-size:.9rem;">₹{{ b.total_amount }}</div></div>
+        </div>
+        {% endfor %}{% else %}<div class="text-center py-4 text-muted"><i class="fas fa-hotel fa-2x mb-2 d-block opacity-25"></i>No hotel bookings yet<br><a href="/hotels/" class="btn btn-sm btn-success mt-2">Browse Hotels</a></div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Guide bookings -->
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="chart-title mb-0"><i class="fas fa-user-tie text-warning me-2"></i>Guide Bookings</div>
+          <a href="/guides/my-bookings/" class="btn btn-sm btn-outline-warning">All</a>
+        </div>
+        {% if guide_bookings %}{% for b in guide_bookings %}
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <div><div class="fw-bold" style="font-size:.9rem;">{{ b.guide.name }}</div><small class="text-muted">{{ b.start_datetime|date:"d M Y" }}</small></div>
+          <div class="text-end"><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span><div class="fw-bold text-warning mt-1" style="font-size:.9rem;">₹{{ b.total_amount }}</div></div>
+        </div>
+        {% endfor %}{% else %}<div class="text-center py-4 text-muted"><i class="fas fa-user-tie fa-2x mb-2 d-block opacity-25"></i>No guide bookings yet<br><a href="/guides/" class="btn btn-sm btn-warning mt-2">Find Guides</a></div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</div>
+        <div class="row g-2">
+          <div class="col-6"><a href="/vehicles/" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-1"><i class="fas fa-car fa-lg"></i><span style="font-size:.82rem;">Rent Vehicle</span></a></div>
+          <div class="col-6"><a href="/hotels/" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-1"><i class="fas fa-hotel fa-lg"></i><span style="font-size:.82rem;">Book Hotel</span></a></div>
+          <div class="col-6"><a href="/guides/" class="btn btn-outline-warning w-100 py-3 d-flex flex-column align-items-center gap-1"><i class="fas fa-user-tie fa-lg"></i><span style="font-size:.82rem;">Hire Guide</span></a></div>
+          <div class="col-6"><a href="/ai/trip-planner/" class="btn btn-primary w-100 py-3 d-flex flex-column align-items-center gap-1"><i class="fas fa-magic fa-lg"></i><span style="font-size:.82rem;">AI Planner</span></a></div>
+          <div class="col-6"><a href="/favorites/" class="btn btn-outline-danger w-100 py-2 d-flex flex-column align-items-center gap-1"><i class="fas fa-heart fa-lg"></i><span style="font-size:.82rem;">Favorites</span></a></div>
+          <div class="col-6"><a href="/profile/" class="btn btn-outline-secondary w-100 py-2 d-flex flex-column align-items-center gap-1"><i class="fas fa-user fa-lg"></i><span style="font-size:.82rem;">Profile</span></a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

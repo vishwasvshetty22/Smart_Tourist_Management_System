@@ -1,0 +1,56 @@
+{% extends 'base.html' %}{% block title %}Tour Guides – SmartTourist{% endblock %}{% block content %}
+<div class="container py-4">
+  <div class="row mb-4 align-items-center">
+    <div class="col"><span class="s-badge">Local Experts</span><h2 class="s-title mb-0">Find a Tour Guide</h2><p class="text-muted">Certified multilingual guides with verified reviews</p></div>
+    <div class="col-auto">
+      {% if user.is_authenticated and user.is_guide %}
+        {% if user.guide_profile %}<a href="/guides/guide-dashboard/" class="btn btn-primary btn-sm"><i class="fas fa-tachometer-alt me-1"></i>My Guide Dashboard</a>
+        {% else %}<a href="/guides/create-profile/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Create Guide Profile</a>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="planner-card mb-4">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-4"><label class="form-label" style="font-size:.82rem;font-weight:600;">📍 Destination</label><select name="location" class="form-select" onchange="this.form.submit()"><option value="">All Destinations</option>{% for l in locations %}<option value="{{ l.id }}" {% if request.GET.location == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-4"><label class="form-label" style="font-size:.82rem;font-weight:600;">🎯 Expertise</label><select name="expertise" class="form-select" onchange="this.form.submit()"><option value="">All Types</option>{% for v,l in expertise_choices %}<option value="{{ v }}" {% if request.GET.expertise == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="col-md-4"><label class="form-label" style="font-size:.82rem;font-weight:600;">📊 Sort By</label><select name="sort" class="form-select" onchange="this.form.submit()"><option value="-avg_rating">Top Rated</option><option value="-total_tours">Most Experienced</option><option value="price_per_day">Price Low→High</option></select></div>
+    </form>
+  </div>
+  {% if page_obj %}
+  <div class="row g-4">
+    {% for g in page_obj %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+      <div class="guide-card h-100">
+        <div class="guide-wrap mb-2">
+          <a href="/guides/{{ g.id }}/">
+            {% if g.profile_image %}<img src="{{ g.profile_image.url }}" class="guide-img">{% else %}<div class="guide-ph">{{ g.user.first_name.0 }}{{ g.user.last_name.0 }}</div>{% endif %}
+          </a>
+          <div class="guide-badge"><i class="fas fa-check" style="font-size:.55rem;"></i></div>
+        </div>
+        <h5 style="font-size:1rem;margin-bottom:2px;">{{ g.name }}</h5>
+        <p class="text-muted" style="font-size:.82rem;margin-bottom:.5rem;">{{ g.get_expertise_display }}</p>
+        <div class="d-flex justify-content-center flex-wrap gap-1 mb-2">{% for l in g.get_languages_list|slice:":3" %}<span class="lang-tag">{{ l }}</span>{% endfor %}</div>
+        <div class="guide-stats mb-2">
+          <span><i class="fas fa-star text-warning"></i> {{ g.avg_rating|floatformat:1 }}</span>
+          <span><i class="fas fa-compass text-primary"></i> {{ g.total_tours }}</span>
+          <span><i class="fas fa-clock text-success"></i> {{ g.years_experience }}y</span>
+        </div>
+        <div class="price-main" style="font-size:1.1rem;">₹{{ g.price_per_day }}<span class="price-unit">/day</span></div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem;">₹{{ g.price_per_hour }}/hour</div>
+        <div class="d-flex gap-2">
+          <a href="/guides/{{ g.id }}/" class="btn btn-sm btn-primary flex-fill">View Profile</a>
+          <button class="btn btn-sm btn-outline-danger" onclick="toggleFav('guide',{{ g.id }},this)"><i class="far fa-heart"></i></button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-4"><ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+    {% for n in page_obj.paginator.page_range %}{% if page_obj.number == n %}<li class="page-item active"><span class="page-link">{{ n }}</span></li>{% elif n > page_obj.number|add:"-3" and n < page_obj.number|add:"3" %}<li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>{% endif %}{% endfor %}
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+  </ul></nav>
+  {% endif %}
+  {% else %}<div class="text-center py-5 text-muted"><i class="fas fa-user-tie fa-4x mb-3 d-block opacity-25"></i><h5>No guides found</h5><a href="/guides/" class="btn btn-primary mt-2">View All Guides</a></div>{% endif %}
+</div>{% endblock %}

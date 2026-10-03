@@ -1,0 +1,140 @@
+{% extends 'base.html' %}{% block title %}Add Vehicle{% endblock %}
+{% block extra_css %}
+<style>
+.form-section { background:#fff; border-radius:12px; padding:1.5rem; border:1px solid #e8e9eb; margin-bottom:1.5rem; }
+.form-section-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--primary); margin-bottom:1rem; padding-bottom:.5rem; border-bottom:2px solid var(--primary-light,#e8f0fe); }
+.form-label { font-size:.85rem; font-weight:600; color:#444; margin-bottom:.3rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:860px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:48px;height:48px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-car text-white fs-5"></i>
+    </div>
+    <div>
+      <h2 class="mb-0" style="font-family:var(--ff-head);">List Your Vehicle</h2>
+      <p class="text-muted mb-0 small">Fill in the details below — our team will review and approve your listing.</p>
+    </div>
+  </div>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} alert-dismissible fade show" role="alert">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+  <form method="post" action="/vehicles/vendor/add/" enctype="multipart/form-data">{% csrf_token %}
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-info-circle me-2"></i>Basic Information</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Vehicle Name *</label>
+          <input type="text" name="name" class="form-control" required placeholder="e.g. Royal Enfield Bullet 350" value="{{ form_data.name|default:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Type *</label>
+          <select name="vehicle_type" class="form-select" required>
+            {% for v,l in type_choices %}<option value="{{ v }}"{% if form_data.vehicle_type == v %} selected{% endif %}>{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Brand *</label>
+          <input type="text" name="brand" class="form-control" required value="{{ form_data.brand|default:'' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Model *</label>
+          <input type="text" name="model" class="form-control" required value="{{ form_data.model|default:'' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Year *</label>
+          <input type="number" name="year" class="form-control" required min="2000" max="2025" value="{{ form_data.year|default:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Registration Number *</label>
+          <input type="text" name="registration_number" class="form-control" required placeholder="KA01AB1234" value="{{ form_data.registration_number|default:'' }}">
+          <div class="form-text">Must be unique — e.g. KA01AB1234</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fuel Type</label>
+          <select name="fuel_type" class="form-select">
+            {% for v,l in fuel_choices %}<option value="{{ v }}"{% if form_data.fuel_type == v %} selected{% endif %}>{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Transmission</label>
+          <select name="transmission" class="form-select">
+            {% for v,l in trans_choices %}<option value="{{ v }}"{% if form_data.transmission == v %} selected{% endif %}>{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Seating Capacity</label>
+          <input type="number" name="seating_capacity" class="form-control" value="{{ form_data.seating_capacity|default:'2' }}" min="1" max="50">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-rupee-sign me-2"></i>Pricing & Deposit</div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Price per Hour (₹) *</label>
+          <div class="input-group">
+            <span class="input-group-text">₹</span>
+            <input type="number" name="price_per_hour" class="form-control" required step="0.01" placeholder="0.00" value="{{ form_data.price_per_hour|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Price per Day (₹) *</label>
+          <div class="input-group">
+            <span class="input-group-text">₹</span>
+            <input type="number" name="price_per_day" class="form-control" required step="0.01" placeholder="0.00" value="{{ form_data.price_per_day|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Security Deposit (₹)</label>
+          <div class="input-group">
+            <span class="input-group-text">₹</span>
+            <input type="number" name="security_deposit" class="form-control" value="{{ form_data.security_deposit|default:'0' }}" step="0.01">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-map-marker-alt me-2"></i>Location & Details</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Destination</label>
+          <select name="location" class="form-select">
+            <option value="">Select destination…</option>
+            {% for l in locations %}<option value="{{ l.id }}"{% if form_data.location == l.id|stringformat:'s' %} selected{% endif %}>{{ l.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Features</label>
+          <input type="text" name="features" class="form-control" placeholder="Helmet, GPS, AC (comma separated)" value="{{ form_data.features|default:'' }}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Pickup Address *</label>
+          <textarea name="pickup_address" class="form-control" rows="2" required placeholder="Enter exact pickup address">{{ form_data.pickup_address|default:'' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Description *</label>
+          <textarea name="description" class="form-control" rows="3" required placeholder="Describe your vehicle — condition, special features, why tourists should choose it…">{{ form_data.description|default:'' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Thumbnail Image</label>
+          <input type="file" name="thumbnail" class="form-control" accept="image/*">
+          <div class="form-text">Upload a clear photo of your vehicle (JPG/PNG recommended)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-primary btn-lg px-5">
+        <i class="fas fa-check me-2"></i>Submit Listing
+      </button>
+      <a href="/vehicles/vendor/dashboard/" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

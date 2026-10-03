@@ -1,0 +1,33 @@
+{% extends 'base.html' %}{% block title %}Hotels – SmartTourist{% endblock %}{% block content %}
+<div class="container-fluid py-4"><div class="row g-4">
+  <div class="col-lg-3"><div class="filter-sidebar">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="mb-0"><i class="fas fa-filter text-primary me-2"></i>Filters</h5><a href="/hotels/" class="btn btn-sm btn-outline-secondary">Reset</a></div>
+    <form method="get">
+      <div class="filter-sec"><div class="filter-title">📍 Destination</div><select name="location" class="form-select form-select-sm" onchange="this.form.submit()"><option value="">All</option>{% for l in locations %}<option value="{{ l.id }}" {% if selected_location == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>{% endfor %}</select></div>
+      <div class="filter-sec"><div class="filter-title">🏨 Category</div>{% for v,l in categories %}<div class="form-check mb-1"><input class="form-check-input" type="checkbox" name="category" value="{{ v }}" id="c{{ v }}" onchange="this.form.submit()"><label class="form-check-label small" for="c{{ v }}">{{ l }}</label></div>{% endfor %}</div>
+      <div class="filter-sec"><div class="filter-title">📊 Sort</div><select name="sort" class="form-select form-select-sm" onchange="this.form.submit()"><option value="-avg_rating">Top Rated</option><option value="rooms__price_per_night">Price Low→High</option><option value="-rooms__price_per_night">Price High→Low</option></select></div>
+    </form>
+  </div></div>
+  <div class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-3"><div><h4 class="mb-0">Available Hotels</h4><small class="text-muted">{{ page_obj.paginator.count }} found</small></div>
+      {% if user.is_authenticated and user.is_hotel_owner %}<a href="/hotels/hotel-dashboard/add/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>List Hotel</a>{% endif %}
+    </div>
+    {% if page_obj %}<div class="row g-4">{% for h in page_obj %}
+    <div class="col-md-6 col-xl-4"><div class="listing-card">
+      <div class="listing-img-wrap">
+        <a href="/hotels/{{ h.slug }}/">
+          {% if h.thumbnail %}<img src="{{ h.thumbnail.url }}" alt="{{ h.name }}" class="listing-img">{% else %}<i class="fas fa-hotel fa-3x text-muted opacity-25"></i>{% endif %}
+        </a>
+        <div class="listing-badges"><span class="badge bg-success">{{ h.get_category_display }}</span><span class="badge bg-warning text-dark">{{ h.star_rating }}★</span></div>
+        <button class="btn-fav" onclick="toggleFav('hotel',{{ h.id }},this)"><i class="far fa-heart"></i></button></div>
+      <div class="listing-body">
+        <div class="listing-loc"><i class="fas fa-map-marker-alt me-1"></i>{{ h.city }}, {{ h.location }}</div>
+        <h5 class="listing-title">{{ h.name }}</h5>
+        <div class="d-flex flex-wrap gap-1 mb-2">{% for a in h.get_amenities_list|slice:":4" %}<span class="tag">{{ a }}</span>{% endfor %}</div>
+        <div class="listing-footer"><div><small class="text-muted">from</small> <span class="price-main">₹{{ h.min_price }}</span><span class="price-unit">/night</span></div><div class="ms-auto" style="font-size:.88rem;"><i class="fas fa-star text-warning"></i> {{ h.avg_rating|floatformat:1 }}</div><a href="/hotels/{{ h.slug }}/" class="btn btn-sm btn-primary">View Details</a></div>
+      </div>
+    </div></div>
+    {% endfor %}</div>
+    {% else %}<div class="text-center py-5 text-muted"><i class="fas fa-hotel fa-4x mb-3 d-block opacity-25"></i><h5>No hotels found</h5><a href="/hotels/" class="btn btn-primary mt-2">Clear Filters</a></div>{% endif %}
+  </div>
+</div></div>{% endblock %}

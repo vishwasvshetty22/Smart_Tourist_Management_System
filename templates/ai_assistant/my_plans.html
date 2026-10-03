@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block title %}My Trip Plans{% endblock %}{% block content %}
+<div class="container py-4"><h2 class="mb-4" style="font-family:var(--ff-head);">My Trip Plans</h2>
+{% if plans %}<div class="row g-4">{% for p in plans %}
+<div class="col-md-6 col-lg-4"><div class="planner-card h-100"><div class="d-flex justify-content-between align-items-start mb-2"><div><h5 style="font-size:1rem;margin-bottom:4px;">{{ p.title }}</h5><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ p.location }}</small></div><span class="badge bg-primary">{{ p.num_days }}d</span></div><div class="d-flex gap-3 mt-2" style="font-size:.82rem;color:var(--muted);"><span><i class="fas fa-rupee-sign me-1"></i>₹{{ p.budget }}</span><span><i class="fas fa-users me-1"></i>{{ p.num_people }} pax</span><span class="ms-auto">{{ p.created_at|date:"d M Y" }}</span></div></div></div>
+{% endfor %}</div>
+{% else %}<div class="text-center py-5 text-muted"><i class="fas fa-robot fa-4x mb-3 d-block opacity-25"></i><h5>No trip plans yet</h5><a href="/ai/trip-planner/" class="btn btn-primary mt-2">Create Your First Plan</a></div>{% endif %}
+</div>{% endblock %}

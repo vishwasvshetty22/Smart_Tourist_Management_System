@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% block title %}Guide Dashboard{% endblock %}{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4"><div><h2 style="font-family:var(--ff-head);">Tour Guide Dashboard 🧭</h2></div></div>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon p"><i class="fas fa-star"></i></div><div><div class="sc-val">{{ guide.avg_rating|floatformat:1 }}</div><div class="sc-lbl">Rating</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon s"><i class="fas fa-route"></i></div><div><div class="sc-val">{{ guide.total_tours }}</div><div class="sc-lbl">Tours Completed</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon a"><i class="fas fa-clock"></i></div><div><div class="sc-val">{{ stats.pending_bookings }}</div><div class="sc-lbl">Pending Bookings</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon i"><i class="fas fa-rupee-sign"></i></div><div><div class="sc-val">₹{{ stats.total_earnings|floatformat:0 }}</div><div class="sc-lbl">Earnings</div></div></div></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-4"><div class="planner-card text-center">
+      <div class="guide-wrap mb-3 d-flex justify-content-center">{% if guide.profile_image %}<img src="{{ guide.profile_image.url }}" class="guide-img" style="width:100px;height:100px;">{% else %}<div class="guide-ph" style="width:100px;height:100px;font-size:1.8rem;">{{ guide.user.first_name.0 }}{{ guide.user.last_name.0 }}</div>{% endif %}<div class="guide-badge"><i class="fas fa-check" style="font-size:.55rem;"></i></div></div>
+      <h5>{{ guide.name }}</h5><p class="text-muted">{{ guide.get_expertise_display }}</p>
+      <div class="d-flex justify-content-center gap-4 mb-3">
+        <div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">{{ guide.avg_rating|floatformat:1 }}</div><div style="font-size:.75rem;color:var(--muted);">Rating</div></div>
+        <div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">{{ guide.total_tours }}</div><div style="font-size:.75rem;color:var(--muted);">Tours</div></div>
+      </div>
+      {% if guide.is_approved %}<span class="badge bg-success fs-6">Profile Live ✓</span>{% else %}<span class="badge bg-warning text-dark fs-6">Awaiting Approval</span>{% endif %}
+      <div class="mt-3">
+        <button class="btn btn-sm {% if guide.is_available %}btn-outline-success{% else %}btn-outline-secondary{% endif %} w-100" onclick="toggleGuide()">
+          {% if guide.is_available %}<i class="fas fa-check-circle me-1"></i>Available for Booking{% else %}<i class="fas fa-pause-circle me-1"></i>Unavailable{% endif %}
+        </button>
+      </div>
+    </div></div>
+    <div class="col-lg-8"><div class="chart-card"><h5 class="chart-title">Recent Bookings</h5>
+      <div class="table-responsive"><table class="smart-table w-100"><thead><tr><th>ID</th><th>Tourist</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>
+      {% for b in bookings %}<tr><td><code>{{ b.booking_id }}</code></td><td>{{ b.tourist.get_full_name }}</td><td>{{ b.start_datetime|date:"d M Y" }}</td><td><strong>₹{{ b.total_amount }}</strong></td><td><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span></td>
+      <td>{% if b.status == 'pending' %}<button class="btn btn-success btn-sm" style="padding:2px 8px;font-size:.75rem;" onclick="manageGuideBooking({{ b.id }},'accept',this)">✓</button> <button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:.75rem;" onclick="manageGuideBooking({{ b.id }},'reject',this)">✗</button>{% else %}<span class="text-muted">—</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No bookings yet</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div></div>
+  </div>
+</div>{% endblock %}

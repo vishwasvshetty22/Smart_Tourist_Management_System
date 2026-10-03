@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block title %}Cancel Guide Booking{% endblock %}{% block content %}
+<div class="container py-4" style="max-width:600px;">
+  <div class="planner-card">
+    <h4 class="mb-3 text-danger"><i class="fas fa-times-circle me-2"></i>Cancel Booking {{ booking.booking_id }}</h4>
+    <div class="p-3 rounded mb-3" style="background:var(--bg);">
+      <div><strong>Guide:</strong> {{ booking.guide.name }}</div>
+      <div><strong>Date:</strong> {{ booking.start_datetime|date:"d M Y" }}</div>
+      <div><strong>Type:</strong> {{ booking.get_booking_type_display }}</div>
+      <div><strong>Amount:</strong> ₹{{ booking.total_amount }}</div>
+    </div>
+    <form method="post">{% csrf_token %}
+      <div class="mb-3"><label class="form-label">Reason for cancellation</label><textarea name="reason" class="form-control" rows="3" placeholder="Optional…"></textarea></div>
+      <button type="submit" class="btn btn-danger"><i class="fas fa-times me-2"></i>Confirm Cancel</button>
+      <a href="/guides/my-bookings/" class="btn btn-outline-secondary ms-2">Go Back</a>
+    </form>
+  </div>
+</div>{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}{% block title %}{{ guide.name }} – SmartTourist{% endblock %}{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="planner-card text-center sticky-top" style="top:85px;">
+        <div class="guide-wrap mb-3 d-flex justify-content-center">
+          {% if guide.profile_image %}<img src="{{ guide.profile_image.url }}" class="guide-img" style="width:110px;height:110px;">{% else %}<div class="guide-ph" style="width:110px;height:110px;font-size:2rem;">{{ guide.user.first_name.0 }}{{ guide.user.last_name.0 }}</div>{% endif %}
+          <div class="guide-badge"><i class="fas fa-check" style="font-size:.55rem;"></i></div>
+        </div>
+        <h3 style="font-family:var(--ff-head);">{{ guide.name }}</h3>
+        <p class="text-muted mb-2">{{ guide.get_expertise_display }}</p>
+        <div class="d-flex justify-content-center flex-wrap gap-1 mb-3">{% for l in guide.get_languages_list %}<span class="lang-tag">{{ l }}</span>{% endfor %}</div>
+        <div class="d-flex justify-content-center gap-4 mb-3">
+          <div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">{{ guide.avg_rating|floatformat:1 }}</div><div style="font-size:.75rem;color:var(--muted);">Rating</div></div>
+          <div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">{{ guide.total_tours }}</div><div style="font-size:.75rem;color:var(--muted);">Tours</div></div>
+          <div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">{{ guide.years_experience }}y</div><div style="font-size:.75rem;color:var(--muted);">Experience</div></div>
+        </div>
+        <div class="p-3 rounded mb-3" style="background:var(--primary-lt);">
+          <div class="d-flex justify-content-between mb-1"><span>Per Hour</span><strong>₹{{ guide.price_per_hour }}</strong></div>
+          <div class="d-flex justify-content-between"><span>Per Day</span><strong>₹{{ guide.price_per_day }}</strong></div>
+        </div>
+        {% if user.is_authenticated %}
+        <form method="post" action="/guides/{{ guide.id }}/book/">{% csrf_token %}
+          <div class="mb-2"><select name="booking_type" class="form-select form-select-sm"><option value="daily">Full Day</option><option value="hourly">Hourly</option><option value="multi_day">Multi-Day</option></select></div>
+          <div class="mb-2"><input type="datetime-local" name="start_datetime" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><input type="datetime-local" name="end_datetime" class="form-control form-control-sm" required></div>
+          <div class="mb-2"><input type="text" name="meeting_point" class="form-control form-control-sm" placeholder="Meeting point…" required></div>
+          <div class="mb-2"><select name="location" class="form-select form-select-sm"><option value="">Select location…</option>{% for l in guide.locations.all %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}</select></div>
+          <div class="mb-3"><input type="number" name="group_size" class="form-control form-control-sm" value="1" min="1" placeholder="Group size"></div>
+          <button type="submit" class="btn btn-primary w-100"><i class="fas fa-calendar-check me-2"></i>Book This Guide</button>
+        </form>
+        {% else %}<a href="/accounts/login/?next=/guides/{{ guide.id }}/" class="btn btn-primary w-100"><i class="fas fa-sign-in-alt me-2"></i>Login to Book</a>{% endif %}
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="planner-card mb-4">
+        <h5 class="mb-3">About {{ guide.name }}</h5>
+        <p class="text-muted">{{ guide.bio }}</p>
+        <div class="row g-3 mt-2">
+          <div class="col-6"><div class="p-2 rounded" style="background:var(--bg);"><div style="font-size:.72rem;color:var(--muted);">Expertise</div><div style="font-weight:600;">{{ guide.get_expertise_display }}</div></div></div>
+          <div class="col-6"><div class="p-2 rounded" style="background:var(--bg);"><div style="font-size:.72rem;color:var(--muted);">Experience</div><div style="font-weight:600;">{{ guide.years_experience }} years</div></div></div>
+          <div class="col-6"><div class="p-2 rounded" style="background:var(--bg);"><div style="font-size:.72rem;color:var(--muted);">Languages</div><div style="font-weight:600;">{{ guide.languages }}</div></div></div>
+          <div class="col-6"><div class="p-2 rounded" style="background:var(--bg);"><div style="font-size:.72rem;color:var(--muted);">Locations</div><div style="font-weight:600;">{% for l in guide.locations.all|slice:":3" %}{{ l.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div></div></div>
+        </div>
+      </div>
+      <div class="planner-card">
+        <h5 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Reviews ({{ reviews|length }})</h5>
+        {% for r in reviews %}<div class="border-bottom pb-3 mb-3"><div class="d-flex justify-content-between"><div class="d-flex gap-2 align-items-center"><div class="avatar-circle" style="width:32px;height:32px;font-size:.8rem;">{{ r.tourist.first_name.0 }}</div><div><div class="fw-bold" style="font-size:.88rem;">{{ r.tourist.get_full_name }}</div><small class="text-muted">{{ r.created_at|date:"d M Y" }}</small></div></div><div>{% for i in "12345" %}{% if forloop.counter <= r.rating %}<i class="fas fa-star text-warning" style="font-size:.8rem;"></i>{% else %}<i class="fas fa-star text-muted opacity-25" style="font-size:.8rem;"></i>{% endif %}{% endfor %}</div></div><p class="mt-2 mb-0 text-muted" style="font-size:.88rem;">{{ r.review_text }}</p></div>
+        {% empty %}<div class="text-center text-muted py-3">No reviews yet.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>{% endblock %}

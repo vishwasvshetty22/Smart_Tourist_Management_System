@@ -1,0 +1,38 @@
+{% extends 'base.html' %}{% block title %}Approvals – Admin{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    {% include 'admin/_sidebar.html' with active_nav='approvals' %}
+  </aside>
+  <div class="admin-main">
+    <button class="admin-mobile-toggle d-lg-none mb-3" onclick="toggleAdminSidebar()"><i class="fas fa-bars me-2"></i>Menu</button>
+    <h1 class="admin-title">Pending Approvals</h1>
+
+    <div class="chart-card mb-4" id="pendingVehicles">
+      <div class="chart-title mb-3"><i class="fas fa-car text-warning me-2"></i>Pending Vehicles ({{ pending_vehicles|length }})</div>
+      {% if pending_vehicles %}
+      <table class="smart-table w-100"><thead><tr><th>Vehicle</th><th>Owner</th><th>Location</th><th>Price/Day</th><th>Action</th></tr></thead><tbody>
+      {% for v in pending_vehicles %}<tr><td><strong>{{ v.brand }} {{ v.model }}</strong><br><small class="text-muted">{{ v.get_vehicle_type_display }}</small></td><td>{{ v.owner.get_full_name }}</td><td>{{ v.location }}</td><td>₹{{ v.price_per_day }}</td><td><a href="/admin-panel/approve/vehicle/{{ v.id }}/?next=/admin-panel/approvals/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+      </tbody></table>
+      {% else %}<div class="text-center text-muted py-3"><i class="fas fa-check-circle me-2"></i>No vehicles waiting for approval.</div>{% endif %}
+    </div>
+
+    <div class="chart-card mb-4" id="pendingHotels">
+      <div class="chart-title mb-3"><i class="fas fa-hotel text-warning me-2"></i>Pending Hotels ({{ pending_hotels|length }})</div>
+      {% if pending_hotels %}
+      <table class="smart-table w-100"><thead><tr><th>Hotel</th><th>Owner</th><th>City</th><th>Category</th><th>Action</th></tr></thead><tbody>
+      {% for h in pending_hotels %}<tr><td><strong>{{ h.name }}</strong></td><td>{{ h.owner.get_full_name }}</td><td>{{ h.city }}</td><td>{{ h.get_category_display }}</td><td><a href="/admin-panel/approve/hotel/{{ h.id }}/?next=/admin-panel/approvals/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+      </tbody></table>
+      {% else %}<div class="text-center text-muted py-3"><i class="fas fa-check-circle me-2"></i>No hotels waiting for approval.</div>{% endif %}
+    </div>
+
+    <div class="chart-card" id="pendingGuides">
+      <div class="chart-title mb-3"><i class="fas fa-user-tie text-warning me-2"></i>Pending Guides ({{ pending_guides|length }})</div>
+      {% if pending_guides %}
+      <table class="smart-table w-100"><thead><tr><th>Guide</th><th>Expertise</th><th>Languages</th><th>Price/Day</th><th>Action</th></tr></thead><tbody>
+      {% for g in pending_guides %}<tr><td><strong>{{ g.name }}</strong></td><td>{{ g.get_expertise_display }}</td><td>{{ g.languages }}</td><td>₹{{ g.price_per_day }}</td><td><a href="/admin-panel/approve/guide/{{ g.id }}/?next=/admin-panel/approvals/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+      </tbody></table>
+      {% else %}<div class="text-center text-muted py-3"><i class="fas fa-check-circle me-2"></i>No guide profiles waiting for approval.</div>{% endif %}
+    </div>
+  </div>
+</div>{% endblock %}

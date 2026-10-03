@@ -1,0 +1,96 @@
+{% extends 'base.html' %}{% block title %}Create Guide Profile{% endblock %}
+{% block extra_css %}
+<style>
+.form-section { background:#fff; border-radius:12px; padding:1.5rem; border:1px solid #e8e9eb; margin-bottom:1.5rem; }
+.form-section-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--primary); margin-bottom:1rem; padding-bottom:.5rem; border-bottom:2px solid var(--primary-light,#e8f0fe); }
+.form-label { font-size:.85rem; font-weight:600; color:#444; margin-bottom:.3rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:48px;height:48px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-user-tie text-white fs-5"></i>
+    </div>
+    <div>
+      <h2 class="mb-0" style="font-family:var(--ff-head);">Create Tour Guide Profile</h2>
+      <p class="text-muted mb-0 small">Tell tourists about yourself and your expertise.</p>
+    </div>
+  </div>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} alert-dismissible fade show" role="alert">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+  <form method="post" action="/guides/create-profile/" enctype="multipart/form-data">{% csrf_token %}
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-id-card me-2"></i>Professional Details</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Expertise / Specialisation</label>
+          <select name="expertise" class="form-select">
+            {% for v,l in expertise %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Years of Experience</label>
+          <input type="number" name="years_experience" class="form-control" value="1" min="0" max="50">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Languages Spoken *</label>
+          <input type="text" name="languages" class="form-control" required placeholder="e.g. English, Hindi, Kannada (comma separated)">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-rupee-sign me-2"></i>Pricing</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Price per Hour (₹) *</label>
+          <div class="input-group">
+            <span class="input-group-text">₹</span>
+            <input type="number" name="price_per_hour" class="form-control" required step="0.01" placeholder="0.00">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Price per Day (₹) *</label>
+          <div class="input-group">
+            <span class="input-group-text">₹</span>
+            <input type="number" name="price_per_day" class="form-control" required step="0.01" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="fas fa-map-marker-alt me-2"></i>Service Area & Bio</div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Locations You Serve</label>
+          <select name="locations" class="form-select" multiple style="height:130px;">
+            {% for l in locations %}<option value="{{ l.id }}">{{ l.name }}, {{ l.state }}</option>{% endfor %}
+          </select>
+          <div class="form-text"><i class="fas fa-info-circle me-1"></i>Hold <kbd>Ctrl</kbd> (Windows) or <kbd>⌘ Cmd</kbd> (Mac) to select multiple locations</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Bio *</label>
+          <textarea name="bio" class="form-control" rows="4" required placeholder="Tell tourists about yourself — your experience, the places you cover, what makes your tours special, any certifications or unique skills…"></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Profile Photo</label>
+          <input type="file" name="profile_image" class="form-control" accept="image/*">
+          <div class="form-text">Upload a clear, professional photo so tourists can recognise you</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-primary btn-lg px-5">
+        <i class="fas fa-check me-2"></i>Submit Profile
+      </button>
+      <a href="/guides/guide-dashboard/" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

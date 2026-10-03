@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}My Notifications – SmartTourist{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 style="font-family:var(--ff-head);"><i class="fas fa-bell text-primary me-2"></i>My Notifications</h2>
+      <p class="text-muted mb-0">Stay updated on your bookings, approvals, and system alerts.</p>
+    </div>
+    {% if notifications %}
+    <button onclick="clearAllNotifications()" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-check-double me-1"></i>Mark all as read
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      {% if notifications %}
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+          <div class="list-group list-group-flush">
+            {% for n in notifications %}
+              <div class="list-group-item list-group-item-action p-3 {% if not n.is_read %}bg-light border-start border-4 border-primary{% endif %}" style="transition: all 0.2s ease;">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                  <div class="d-flex gap-3">
+                    <div class="flex-shrink-0 mt-1">
+                      {% if n.type == 'booking_confirmed' or n.type == 'listing_approved' %}
+                        <span class="badge bg-success p-2 rounded-circle" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-check fa-fw"></i></span>
+                      {% elif n.type == 'booking_cancelled' or n.type == 'booking_rejected' or n.type == 'listing_rejected' %}
+                        <span class="badge bg-danger p-2 rounded-circle" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-times fa-fw"></i></span>
+                      {% elif n.type == 'payment_success' %}
+                        <span class="badge bg-success p-2 rounded-circle" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-credit-card fa-fw"></i></span>
+                      {% elif n.type == 'new_booking' %}
+                        <span class="badge bg-primary p-2 rounded-circle" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-calendar-plus fa-fw"></i></span>
+                      {% else %}
+                        <span class="badge bg-secondary p-2 rounded-circle" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-info fa-fw"></i></span>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <h6 class="mb-1 fw-bold text-dark">{{ n.title }}</h6>
+                      <p class="mb-1 text-secondary small">{{ n.message }}</p>
+                      {% if n.link %}
+                        <a href="{{ n.link }}" class="btn btn-sm btn-link p-0 text-primary fw-semibold small mt-1">
+                          View details <i class="fas fa-arrow-right ms-1" style="font-size:0.75rem;"></i>
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <small class="text-muted text-nowrap ms-2" style="font-size:0.75rem;">{{ n.created_at|timesince }} ago</small>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm border">
+          <i class="fas fa-bell-slash fa-4x mb-3 d-block opacity-25"></i>
+          <h5>No notifications yet</h5>
+          <p class="small mb-0">We will notify you here when you have updates on bookings, listings, or payments.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function clearAllNotifications() {
+  fetch('/notifications/mark-read/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'ok') {
+      window.location.reload();
+    }
+  });
+}
+</script>
+{% endblock %}

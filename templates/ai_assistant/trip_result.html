@@ -1,0 +1,36 @@
+{% extends 'base.html' %}{% block title %}{{ trip.title }} – SmartTourist{% endblock %}{% block content %}
+<div class="container py-4">
+  <div class="row mb-4 align-items-center">
+    <div class="col"><div class="hero-badge mb-2" style="background:rgba(26,107,74,.1);color:var(--primary);"><i class="fas fa-robot me-2"></i>AI Generated Plan</div><h1 class="s-title">{{ trip.title }}</h1><div class="d-flex flex-wrap gap-3 text-muted mt-1"><span><i class="fas fa-map-marker-alt text-primary me-1"></i>{{ location.name }}, {{ location.state }}</span><span><i class="fas fa-calendar text-success me-1"></i>{{ trip.num_days }} Days</span><span><i class="fas fa-users text-info me-1"></i>{{ trip.num_people }} Person(s)</span><span><i class="fas fa-rupee-sign text-warning me-1"></i>Budget: ₹{{ trip.budget }}</span></div></div>
+    <div class="col-auto"><a href="/ai/trip-planner/" class="btn btn-outline-primary me-2"><i class="fas fa-redo me-1"></i>Replan</a><button onclick="window.print()" class="btn btn-outline-secondary"><i class="fas fa-print me-1"></i>Print</button></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="planner-card mb-4">
+        <h4 class="mb-4"><i class="fas fa-route text-primary me-2"></i>Day-by-Day Itinerary</h4>
+        {% for day,activities in plan.itinerary.items %}
+        <div class="itin-day">
+          <div class="itin-day-title"><i class="fas fa-calendar-day me-2"></i>{{ day }}</div>
+          {% if activities.morning %}<div class="mb-2"><div class="session-lbl">🌅 Morning</div><div style="font-size:.9rem;">{{ activities.morning }}</div></div>{% endif %}
+          {% if activities.afternoon %}<div class="mb-2"><div class="session-lbl">☀️ Afternoon</div><div style="font-size:.9rem;">{{ activities.afternoon }}</div></div>{% endif %}
+          {% if activities.evening %}<div class="mb-2"><div class="session-lbl">🌙 Evening</div><div style="font-size:.9rem;">{{ activities.evening }}</div></div>{% endif %}
+          {% if activities.tip %}<div class="mt-2 p-2 rounded" style="background:rgba(244,160,36,.08);border-left:3px solid var(--accent);"><small><i class="fas fa-lightbulb text-warning me-1"></i>{{ activities.tip }}</small></div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% if plan.must_visit %}<div class="planner-card mb-4"><h4 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Must-Visit Places</h4><div class="row g-2">{% for place in plan.must_visit %}<div class="col-md-6"><div class="d-flex align-items-center gap-2 p-2 border rounded"><div style="width:28px;height:28px;background:var(--primary-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700;flex-shrink:0;font-size:.8rem;">{{ forloop.counter }}</div><span style="font-size:.9rem;">{{ place }}</span></div></div>{% endfor %}</div></div>{% endif %}
+      {% if plan.tips %}<div class="planner-card mb-4"><h4 class="mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Travel Tips</h4><ul class="list-unstyled">{% for tip in plan.tips %}<li class="d-flex gap-2 mb-2"><i class="fas fa-check-circle text-success mt-1" style="flex-shrink:0;"></i><span style="font-size:.9rem;">{{ tip }}</span></li>{% endfor %}</ul>{% if plan.best_time %}<div class="p-3 rounded" style="background:var(--primary-lt);"><strong><i class="fas fa-calendar-alt text-primary me-2"></i>Best Time to Visit:</strong> {{ plan.best_time }}</div>{% endif %}</div>{% endif %}
+    </div>
+    <div class="col-lg-4">
+      {% if plan.cost_breakdown %}<div class="planner-card mb-4"><h5 class="mb-3"><i class="fas fa-rupee-sign text-success me-2"></i>Cost Breakdown</h5>{% for key,val in plan.cost_breakdown.items %}{% if key != 'total_estimated' %}<div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom"><span style="font-size:.88rem;text-transform:capitalize;">{{ key }}</span><strong style="color:var(--primary);">₹{{ val }}</strong></div>{% endif %}{% endfor %}{% if plan.cost_breakdown.total_estimated %}<div class="d-flex justify-content-between align-items-center mt-2 pt-1"><strong>Total Estimated</strong><strong style="font-size:1.2rem;color:var(--primary);">₹{{ plan.cost_breakdown.total_estimated }}</strong></div>{% endif %}</div>{% endif %}
+      {% if plan.hotels %}<div class="planner-card mb-4"><h5 class="mb-3"><i class="fas fa-hotel text-info me-2"></i>Hotel Suggestions</h5>{% for h in plan.hotels %}<div class="border rounded p-3 mb-2"><div class="d-flex justify-content-between"><strong style="font-size:.9rem;">{{ h.name }}</strong><span class="badge bg-success">{{ h.rating }}★</span></div><div class="d-flex justify-content-between mt-1"><small class="text-muted text-capitalize">{{ h.type }}</small><small class="text-primary fw-bold">₹{{ h.price_per_night }}/night</small></div><a href="/hotels/?location={{ location.id }}" class="btn btn-xs btn-outline-primary w-100 mt-2" style="font-size:.75rem;padding:3px 8px;">Browse Similar</a></div>{% endfor %}</div>{% endif %}
+      {% if plan.vehicles %}<div class="planner-card mb-4"><h5 class="mb-3"><i class="fas fa-car text-primary me-2"></i>Vehicle Suggestions</h5>{% for v in plan.vehicles %}<div class="border rounded p-3 mb-2"><div class="d-flex justify-content-between"><strong style="font-size:.9rem;">{{ v.name }}</strong><span class="badge bg-primary">{{ v.type|title }}</span></div><div class="d-flex justify-content-between mt-1"><small class="text-muted">{{ v.seats|default:"2" }} seats</small><small class="text-primary fw-bold">₹{{ v.price_per_day }}/day</small></div>{% if v.note %}<small class="text-muted d-block mt-1">{{ v.note }}</small>{% endif %}<a href="/vehicles/?location={{ location.id }}" class="btn btn-xs btn-outline-primary w-100 mt-2" style="font-size:.75rem;padding:3px 8px;">Browse Vehicles</a></div>{% endfor %}</div>{% endif %}
+      <div class="planner-card text-center" style="background:var(--primary);color:#fff;">
+        <i class="fas fa-plane-departure fa-2x mb-2"></i><h5 style="color:#fff;">Ready to Book?</h5>
+        <p style="font-size:.85rem;opacity:.85;">Book vehicles and hotels for {{ location.name }}</p>
+        <a href="/vehicles/?location={{ location.id }}" class="btn btn-light btn-sm mb-2 w-100"><i class="fas fa-car me-1"></i>Rent a Vehicle</a>
+        <a href="/hotels/?location={{ location.id }}" class="btn btn-outline-light btn-sm w-100"><i class="fas fa-hotel me-1"></i>Book a Hotel</a>
+      </div>
+    </div>
+  </div>
+</div>{% endblock %}

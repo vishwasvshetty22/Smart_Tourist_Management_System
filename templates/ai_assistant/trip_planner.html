@@ -1,0 +1,128 @@
+{% extends 'base.html' %}{% block title %}AI Trip Planner – SmartTourist{% endblock %}{% block content %}
+<section class="planner-hero"><div class="container"><div class="row align-items-center">
+  <div class="col-lg-7"><div class="hero-badge mb-3"><i class="fas fa-robot me-2"></i>AI-Powered</div><h1 class="hero-title" style="font-size:2.5rem;">Plan Your Perfect<br><span class="hero-hl">AI Trip</span></h1><p class="hero-sub">Enter destination, budget &amp; days. AI creates a complete personalised itinerary instantly.</p></div>
+  <div class="col-lg-5 text-center d-none d-lg-block" style="font-size:7rem;opacity:.15;">🤖</div>
+</div></div></section>
+
+<section class="py-5"><div class="container"><div class="row g-4">
+  <div class="col-lg-5">
+    <div class="planner-card sticky-top" style="top:85px;">
+      <h4 class="mb-4"><i class="fas fa-magic text-primary me-2"></i>Generate Trip Plan</h4>
+      <form method="post" id="planForm">{% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Destination *</label>
+          <select name="location" class="form-select" required>
+            <option value="">Choose destination…</option>
+            {% for l in locations %}<option value="{{ l.id }}">{{ l.name }}, {{ l.state }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6"><label class="form-label">Budget (₹) *</label><input type="number" name="budget" class="form-control" placeholder="e.g. 15000" min="1000" required></div>
+          <div class="col-6"><label class="form-label">Days *</label><input type="number" name="num_days" class="form-control" placeholder="e.g. 3" min="1" max="30" required></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">People</label>
+          <select name="num_people" class="form-select">
+            <option value="1">1 (Solo)</option>
+            <option value="2" selected>2 (Couple)</option>
+            <option value="3">3</option>
+            <option value="4">4 (Family)</option>
+            <option value="6">6+ (Group)</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Preferences</label>
+          <div class="row g-2">
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="adventure" style="display:none;">🧗 Adventure</label></div>
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="culture" style="display:none;">🏛️ Culture</label></div>
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="nature" style="display:none;">🌿 Nature</label></div>
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="food" style="display:none;">🍽️ Food</label></div>
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="relaxation" style="display:none;">🛀 Relaxation</label></div>
+            <div class="col-6"><label class="pref-lbl" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;transition:all .2s;"><input type="checkbox" name="preferences" value="photography" style="display:none;">📷 Photography</label></div>
+          </div>
+        </div>
+        {% if user.is_authenticated %}
+        <button type="submit" class="btn btn-primary w-100 btn-lg" id="genBtn"><i class="fas fa-magic me-2"></i>Generate Trip Plan</button>
+        {% else %}
+        <a href="/accounts/login/?next=/ai/trip-planner/" class="btn btn-primary w-100 btn-lg"><i class="fas fa-sign-in-alt me-2"></i>Login to Generate</a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="planner-card mb-4">
+      <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>How It Works</h5>
+      <div class="row g-3">
+        <div class="col-6"><div class="d-flex gap-3"><div class="step-icon" style="width:40px;height:40px;font-size:.9rem;flex-shrink:0;">1</div><div><strong style="font-size:.9rem;">Enter Details</strong><br><small class="text-muted">Budget, days &amp; destination</small></div></div></div>
+        <div class="col-6"><div class="d-flex gap-3"><div class="step-icon" style="width:40px;height:40px;font-size:.9rem;flex-shrink:0;">2</div><div><strong style="font-size:.9rem;">AI Generates</strong><br><small class="text-muted">Analyses your preferences</small></div></div></div>
+        <div class="col-6"><div class="d-flex gap-3"><div class="step-icon" style="width:40px;height:40px;font-size:.9rem;flex-shrink:0;">3</div><div><strong style="font-size:.9rem;">Get Itinerary</strong><br><small class="text-muted">Day-by-day plan with tips</small></div></div></div>
+        <div class="col-6"><div class="d-flex gap-3"><div class="step-icon" style="width:40px;height:40px;font-size:.9rem;flex-shrink:0;">4</div><div><strong style="font-size:.9rem;">Book &amp; Go!</strong><br><small class="text-muted">Directly book suggestions</small></div></div></div>
+      </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-3">
+      {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if saved_plans %}
+    <div class="planner-card mb-4">
+      <h5 class="mb-3"><i class="fas fa-bookmark text-warning me-2"></i>Your Saved Plans</h5>
+      <div class="row g-3">{% for p in saved_plans %}
+      <div class="col-md-6"><div class="border rounded p-3">
+        <div class="d-flex justify-content-between">
+          <div><div class="fw-bold" style="font-size:.9rem;">{{ p.title }}</div><small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ p.location }}</small></div>
+          <span class="badge bg-primary">{{ p.num_days }}d</span>
+        </div>
+        <div class="mt-2 d-flex gap-2" style="font-size:.8rem;"><span>₹{{ p.budget }}</span><span>{{ p.num_people }} pax</span><span class="ms-auto text-muted">{{ p.created_at|date:"d M" }}</span></div>
+      </div></div>
+      {% endfor %}</div>
+      <a href="/ai/my-plans/" class="btn btn-sm btn-outline-primary mt-2">View All Plans</a>
+    </div>
+    {% endif %}
+
+    {% if locations %}
+    <div class="planner-card">
+      <h5 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Popular Destinations</h5>
+      <div class="row g-2">{% for l in locations %}
+      <div class="col-6 col-md-4">
+        <div class="border rounded p-2 text-center" style="cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--primary-lt)'" onmouseout="this.style.background=''" onclick="document.querySelector('[name=location]').value='{{ l.id }}'">
+          <div style="font-size:1.5rem;">
+            {% if l.name == 'Goa' %}🌊{% elif l.name == 'Mysore' %}🏯{% elif l.name == 'Coorg' %}☕{% elif l.name == 'Ooty' %}🌸{% elif l.name == 'Manali' %}❄️{% else %}🌴{% endif %}
+          </div>
+          <div class="fw-bold" style="font-size:.85rem;">{{ l.name }}</div>
+          <small class="text-muted">{{ l.state }}</small>
+        </div>
+      </div>{% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="planner-card text-center py-4">
+      <i class="fas fa-map-marked-alt text-muted" style="font-size:2rem;"></i>
+      <p class="text-muted mt-2 mb-0">No destinations loaded yet. Run <code>python manage.py load_data</code> to populate.</p>
+    </div>
+    {% endif %}
+  </div>
+</div></div></section>
+{% endblock %}
+{% block extra_js %}<script>
+document.getElementById('planForm')?.addEventListener('submit', function() {
+  var b = document.getElementById('genBtn');
+  if (b) { b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating…'; }
+});
+document.querySelectorAll('.pref-lbl').forEach(function(l) {
+  l.addEventListener('click', function() {
+    var inp = l.querySelector('input');
+    setTimeout(function() {
+      l.style.borderColor = inp.checked ? 'var(--primary)' : 'var(--border)';
+      l.style.background  = inp.checked ? 'var(--primary-lt)' : '';
+    }, 0);
+  });
+});
+</script>{% endblock %}

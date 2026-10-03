@@ -1,0 +1,37 @@
+{% extends 'base.html' %}{% block title %}Complete Payment – SmartTourist{% endblock %}{% block content %}
+<div class="container py-4" style="max-width:700px;">
+  <h2 class="mb-4" style="font-family:var(--ff-head);"><i class="fas fa-credit-card text-primary me-2"></i>Complete Payment</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="planner-card">
+        <h5 class="mb-3">Choose Payment Method</h5>
+        <form method="post" action="/payments/complete/" id="payForm">{% csrf_token %}
+          <input type="hidden" name="booking_type" value="{{ booking_type }}">
+          <input type="hidden" name="booking_id" value="{{ booking_id }}">
+          <div class="row g-2 mb-4">
+            <div class="col-6"><label class="pay-method"><input type="radio" name="payment_method" value="upi" checked><div class="d-flex align-items-center gap-2"><i class="fas fa-mobile-alt text-primary fa-lg"></i><div><div class="fw-bold" style="font-size:.9rem;">UPI</div><div style="font-size:.75rem;color:var(--muted);">GPay, PhonePe, Paytm</div></div></div></label></div>
+            <div class="col-6"><label class="pay-method"><input type="radio" name="payment_method" value="card"><div class="d-flex align-items-center gap-2"><i class="fas fa-credit-card text-success fa-lg"></i><div><div class="fw-bold" style="font-size:.9rem;">Card</div><div style="font-size:.75rem;color:var(--muted);">Debit / Credit Card</div></div></div></label></div>
+            <div class="col-6"><label class="pay-method"><input type="radio" name="payment_method" value="netbanking"><div class="d-flex align-items-center gap-2"><i class="fas fa-university text-warning fa-lg"></i><div><div class="fw-bold" style="font-size:.9rem;">Net Banking</div><div style="font-size:.75rem;color:var(--muted);">All major banks</div></div></div></label></div>
+            <div class="col-6"><label class="pay-method"><input type="radio" name="payment_method" value="simulation"><div class="d-flex align-items-center gap-2"><i class="fas fa-flask text-info fa-lg"></i><div><div class="fw-bold" style="font-size:.9rem;">Demo Pay</div><div style="font-size:.75rem;color:var(--muted);">Instant simulation</div></div></div></label></div>
+          </div>
+          <button type="submit" id="payBtn" class="btn btn-primary btn-lg w-100" onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-2\'></i>Processing…';this.form.submit();">
+            <i class="fas fa-lock me-2"></i>Pay ₹{{ amount }} Securely
+          </button>
+        </form>
+        <p class="text-center text-muted mt-3" style="font-size:.8rem;"><i class="fas fa-shield-alt me-1 text-success"></i>256-bit SSL secured. Payment is simulated for demo.</p>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="planner-card" style="background:var(--primary-lt);border-color:var(--primary);">
+        <h6 class="mb-3 text-primary"><i class="fas fa-receipt me-2"></i>Booking Summary</h6>
+        <div class="d-flex justify-content-between mb-2"><span>Booking ID</span><code>{{ booking_id }}</code></div>
+        <div class="d-flex justify-content-between mb-2"><span>Service</span><span class="badge bg-primary">{{ booking_type|title }}</span></div>
+        {% if booking %}
+        <div class="d-flex justify-content-between mb-2"><span>Status</span><span class="sbadge sb-{{ booking.status }}">{{ booking.get_status_display }}</span></div>
+        {% endif %}
+        <hr>
+        <div class="d-flex justify-content-between"><strong>Total Amount</strong><strong class="text-primary" style="font-size:1.3rem;">₹{{ amount }}</strong></div>
+      </div>
+    </div>
+  </div>
+</div>{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}{% block title %}{{ hotel.name }} – SmartTourist{% endblock %}{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><li class="breadcrumb-item"><a href="/hotels/">Hotels</a></li><li class="breadcrumb-item active">{{ hotel.name }}</li></ol></nav>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="mb-3" style="border-radius:var(--r-lg);overflow:hidden;height:340px;background:var(--primary-lt);display:flex;align-items:center;justify-content:center;">{% if hotel.thumbnail %}<img src="{{ hotel.thumbnail.url }}" alt="{{ hotel.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<i class="fas fa-hotel fa-5x text-muted opacity-25"></i>{% endif %}</div>
+      <div class="planner-card mb-4">
+        <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+          <div><span class="badge bg-success me-1">{{ hotel.get_category_display }}</span><span class="badge bg-warning text-dark">{{ hotel.star_rating }}★</span><h2 class="mt-2" style="font-family:var(--ff-head);">{{ hotel.name }}</h2><p class="text-muted mb-0"><i class="fas fa-map-marker-alt text-primary me-1"></i>{{ hotel.address }}, {{ hotel.city }}</p></div>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-3"><i class="fas fa-star text-warning"></i><strong>{{ hotel.avg_rating|floatformat:1 }}</strong><span class="text-muted">({{ hotel.total_bookings }} bookings)</span></div>
+        <p class="text-muted" style="font-size:.9rem;">{{ hotel.description }}</p>
+        {% if hotel.amenities %}<h6>Amenities</h6><div class="d-flex flex-wrap gap-1">{% for a in hotel.get_amenities_list %}<span class="tag"><i class="fas fa-check me-1"></i>{{ a }}</span>{% endfor %}</div>{% endif %}
+      </div>
+      <!-- Rooms -->
+      <div class="planner-card mb-4">
+        <h5 class="mb-3"><i class="fas fa-bed text-primary me-2"></i>Available Rooms</h5>
+        {% for room in rooms %}
+        <div class="border rounded p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div><h6 class="mb-1">{{ room.get_room_type_display }} – Room {{ room.room_number }}</h6>
+              <div class="d-flex flex-wrap gap-2 mb-2" style="font-size:.82rem;color:var(--muted);">
+                <span><i class="fas fa-users me-1"></i>{{ room.capacity }} guests</span>
+                {% if room.has_ac %}<span><i class="fas fa-snowflake me-1 text-info"></i>AC</span>{% endif %}
+                {% if room.has_wifi %}<span><i class="fas fa-wifi me-1 text-primary"></i>WiFi</span>{% endif %}
+                {% if room.has_tv %}<span><i class="fas fa-tv me-1"></i>TV</span>{% endif %}
+              </div>
+            </div>
+            <div class="text-end"><span class="price-main">₹{{ room.price_per_night }}</span><span class="price-unit">/night</span></div>
+          </div>
+          {% if user.is_authenticated %}
+          <form method="post" action="/hotels/{{ hotel.slug }}/book/" class="row g-2 mt-1">{% csrf_token %}
+            <input type="hidden" name="room_id" value="{{ room.id }}">
+            <div class="col-md-3"><input type="date" name="check_in_date" class="form-control form-control-sm" required></div>
+            <div class="col-md-3"><input type="date" name="check_out_date" class="form-control form-control-sm" required></div>
+            <div class="col-md-2"><input type="number" name="guests_count" class="form-control form-control-sm" value="1" min="1" max="{{ room.capacity }}" placeholder="Guests"></div>
+            <div class="col-md-2"><input type="text" name="guest_name" class="form-control form-control-sm" value="{{ user.get_full_name }}" placeholder="Guest Name"></div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100">Book</button></div>
+          </form>
+          {% else %}<a href="/accounts/login/?next=/hotels/{{ hotel.slug }}/" class="btn btn-sm btn-outline-primary mt-2">Login to Book</a>{% endif %}
+        </div>
+        {% empty %}<div class="text-center text-muted py-3">No rooms available currently.</div>{% endfor %}
+      </div>
+      <!-- Reviews -->
+      <div class="planner-card">
+        <h5 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Reviews</h5>
+        {% for r in reviews %}<div class="border-bottom pb-3 mb-3"><div class="d-flex justify-content-between"><div class="d-flex gap-2 align-items-center"><div class="avatar-circle" style="width:32px;height:32px;font-size:.8rem;">{{ r.tourist.first_name.0 }}</div><div><div class="fw-bold" style="font-size:.88rem;">{{ r.tourist.get_full_name }}</div><small class="text-muted">{{ r.created_at|date:"d M Y" }}</small></div></div><div>{% for i in "12345" %}{% if forloop.counter <= r.rating %}<i class="fas fa-star text-warning" style="font-size:.8rem;"></i>{% else %}<i class="fas fa-star text-muted opacity-25" style="font-size:.8rem;"></i>{% endif %}{% endfor %}</div></div><p class="mt-2 mb-0 text-muted" style="font-size:.88rem;">{{ r.review_text }}</p></div>
+        {% empty %}<div class="text-center text-muted py-3"><i class="fas fa-comment-slash fa-2x mb-2 d-block opacity-25"></i>No reviews yet.</div>{% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="planner-card sticky-top" style="top:85px;">
+        <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Hotel Info</h5>
+        <div class="mb-2"><i class="fas fa-phone text-primary me-2"></i>{{ hotel.phone }}</div>
+        {% if hotel.email %}<div class="mb-2"><i class="fas fa-envelope text-primary me-2"></i>{{ hotel.email }}</div>{% endif %}
+        <div class="mb-3"><i class="fas fa-map-marker-alt text-primary me-2"></i>{{ hotel.address }}, {{ hotel.city }}, {{ hotel.state }}</div>
+        {% if hotel.rooms.exists %}<div class="p-3 rounded mb-3" style="background:var(--primary-lt);">
+          <div class="d-flex justify-content-between"><span class="fw-bold">Starting from</span><span class="price-main">₹{{ hotel.min_price }}</span></div><small class="text-muted">per night</small>
+        </div>{% endif %}
+        <div class="d-flex gap-2"><a href="/favorites/" class="btn btn-outline-danger flex-fill" onclick="toggleFav('hotel',{{ hotel.id }},this);return false;"><i class="far fa-heart me-1"></i>Save</a><a href="/hotels/" class="btn btn-outline-secondary flex-fill">← Back</a></div>
+      </div>
+    </div>
+  </div>
+</div>{% endblock %}

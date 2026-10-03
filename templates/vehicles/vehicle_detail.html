@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle.brand }} {{ vehicle.model }} – SmartTourist{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><li class="breadcrumb-item"><a href="/vehicles/">Vehicles</a></li><li class="breadcrumb-item active">{{ vehicle.brand }} {{ vehicle.model }}</li></ol></nav>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Gallery -->
+      <div class="mb-3" style="border-radius:var(--r-lg);overflow:hidden;height:360px;background:var(--primary-lt);display:flex;align-items:center;justify-content:center;">
+        {% if vehicle.thumbnail %}<img id="mainImg" src="{{ vehicle.thumbnail.url }}" alt="{{ vehicle.name }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}<i class="fas fa-car fa-5x text-muted opacity-25"></i>{% endif %}
+      </div>
+      {% if vehicle.images.all %}
+      <div class="d-flex gap-2 mb-4 overflow-auto">
+        {% if vehicle.thumbnail %}<img src="{{ vehicle.thumbnail.url }}" class="gallery-thumb active" data-src="{{ vehicle.thumbnail.url }}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">{% endif %}
+        {% for img in vehicle.images.all %}<img src="{{ img.image.url }}" class="gallery-thumb" data-src="{{ img.image.url }}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">{% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Info -->
+      <div class="planner-card mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <span class="badge bg-primary mb-2">{{ vehicle.get_vehicle_type_display }}</span>
+            <h2 style="font-family:var(--ff-head);">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.year }})</h2>
+            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt text-primary me-1"></i>{{ vehicle.pickup_address }}</p>
+          </div>
+          <button class="btn btn-sm btn-outline-danger {% if is_fav %}active{% endif %}" onclick="toggleFav('vehicle',{{ vehicle.id }},this)">
+            <i class="{% if is_fav %}fas{% else %}far{% endif %} fa-heart me-1"></i>{% if is_fav %}Saved{% else %}Save{% endif %}
+          </button>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          {% for i in "12345" %}{% if forloop.counter <= vehicle.avg_rating|floatformat:"0"|add:"0" %}<i class="fas fa-star text-warning"></i>{% else %}<i class="fas fa-star text-muted opacity-25"></i>{% endif %}{% endfor %}
+          <strong>{{ vehicle.avg_rating|floatformat:1 }}</strong><span class="text-muted">({{ vehicle.total_bookings }} bookings)</span>
+        </div>
+        <div class="row g-2 mb-3">
+          {% for icon,label,val in specs %}
+          <div class="col-6 col-md-3"><div class="text-center p-2 rounded" style="background:var(--bg);"><i class="fas fa-{{ icon }} text-primary mb-1 d-block"></i><div style="font-size:.72rem;color:var(--muted);">{{ label }}</div><div style="font-size:.88rem;font-weight:600;">{{ val }}</div></div></div>
+          {% endfor %}
+          <div class="col-6 col-md-3"><div class="text-center p-2 rounded" style="background:var(--bg);"><i class="fas fa-gas-pump text-primary mb-1 d-block"></i><div style="font-size:.72rem;color:var(--muted);">Fuel</div><div style="font-size:.88rem;font-weight:600;">{{ vehicle.get_fuel_type_display }}</div></div></div>
+          <div class="col-6 col-md-3"><div class="text-center p-2 rounded" style="background:var(--bg);"><i class="fas fa-cog text-primary mb-1 d-block"></i><div style="font-size:.72rem;color:var(--muted);">Transmission</div><div style="font-size:.88rem;font-weight:600;">{{ vehicle.get_transmission_display }}</div></div></div>
+          <div class="col-6 col-md-3"><div class="text-center p-2 rounded" style="background:var(--bg);"><i class="fas fa-users text-primary mb-1 d-block"></i><div style="font-size:.72rem;color:var(--muted);">Seats</div><div style="font-size:.88rem;font-weight:600;">{{ vehicle.seating_capacity }}</div></div></div>
+          <div class="col-6 col-md-3"><div class="text-center p-2 rounded" style="background:var(--bg);"><i class="fas fa-calendar text-primary mb-1 d-block"></i><div style="font-size:.72rem;color:var(--muted);">Year</div><div style="font-size:.88rem;font-weight:600;">{{ vehicle.year }}</div></div></div>
+        </div>
+        <h6>Description</h6><p class="text-muted" style="font-size:.9rem;">{{ vehicle.description }}</p>
+        {% if vehicle.features %}<h6>Features</h6><div class="d-flex flex-wrap gap-1">{% for f in vehicle.get_features_list %}<span class="tag"><i class="fas fa-check me-1"></i>{{ f }}</span>{% endfor %}</div>{% endif %}
+      </div>
+
+      <!-- Reviews -->
+      <div class="planner-card">
+        <h5 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Reviews ({{ reviews|length }})</h5>
+        {% for r in reviews %}
+        <div class="border-bottom pb-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex gap-2 align-items-center">
+              <div class="avatar-circle" style="width:36px;height:36px;">{{ r.tourist.first_name.0 }}</div>
+              <div><div class="fw-bold" style="font-size:.9rem;">{{ r.tourist.get_full_name }}</div><small class="text-muted">{{ r.created_at|date:"d M Y" }}</small></div>
+            </div>
+            <div>{% for i in "12345" %}{% if forloop.counter <= r.rating %}<i class="fas fa-star text-warning" style="font-size:.85rem;"></i>{% else %}<i class="fas fa-star text-muted opacity-25" style="font-size:.85rem;"></i>{% endif %}{% endfor %}</div>
+          </div>
+          <p class="mt-2 mb-0" style="font-size:.88rem;">{{ r.review_text }}</p>
+        </div>
+        {% empty %}<div class="text-center text-muted py-3"><i class="fas fa-comment-slash fa-2x mb-2 d-block opacity-25"></i>No reviews yet.</div>{% endfor %}
+        {% if user.is_authenticated and user.is_tourist %}
+        <form method="post" action="/vehicles/{{ vehicle.id }}/review/" class="mt-3">{% csrf_token %}
+          <h6>Write a Review</h6>
+          <select name="rating" class="form-select form-select-sm w-auto mb-2">
+            <option value="5">⭐⭐⭐⭐⭐ Excellent</option><option value="4">⭐⭐⭐⭐ Good</option>
+            <option value="3" selected>⭐⭐⭐ Average</option><option value="2">⭐⭐ Poor</option><option value="1">⭐ Terrible</option>
+          </select>
+          <textarea name="review_text" class="form-control mb-2" rows="3" placeholder="Share your experience…"></textarea>
+          <button type="submit" class="btn btn-sm btn-primary">Submit Review</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Booking panel -->
+    <div class="col-lg-4">
+      <div class="planner-card sticky-top" style="top:85px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div><span class="price-main" style="font-size:1.6rem;">₹{{ vehicle.price_per_day }}</span><span class="price-unit">/day</span><div style="font-size:.82rem;color:var(--muted);">₹{{ vehicle.price_per_hour }}/hour</div></div>
+          <span class="badge {% if vehicle.is_available %}bg-success{% else %}bg-danger{% endif %} fs-6">{% if vehicle.is_available %}Available{% else %}Unavailable{% endif %}</span>
+        </div>
+        {% if vehicle.is_available %}
+          {% if user.is_authenticated %}
+          <form method="post" action="/vehicles/{{ vehicle.id }}/book/">{% csrf_token %}
+            <div class="mb-3"><label class="form-label">Rental Type</label>
+              <select name="rental_type" id="id_rental_type" class="form-select" onchange="calcPrice({{ vehicle.price_per_day }},{{ vehicle.price_per_hour }})">
+                <option value="daily">Daily</option><option value="hourly">Hourly</option>
+              </select>
+            </div>
+            <div class="mb-3"><label class="form-label">Start Date & Time</label>
+              <input type="datetime-local" name="start_datetime" id="id_start_datetime" class="form-control" required onchange="calcPrice({{ vehicle.price_per_day }},{{ vehicle.price_per_hour }});checkAvail({{ vehicle.id }})">
+            </div>
+            <div class="mb-3"><label class="form-label">End Date & Time</label>
+              <input type="datetime-local" name="end_datetime" id="id_end_datetime" class="form-control" required onchange="calcPrice({{ vehicle.price_per_day }},{{ vehicle.price_per_hour }});checkAvail({{ vehicle.id }})">
+            </div>
+            <div class="mb-3"><label class="form-label">Pickup Location</label><textarea name="pickup_location" class="form-control" rows="2" required placeholder="Your address…"></textarea></div>
+            <div class="mb-3"><label class="form-label">Special Requests</label><textarea name="special_requests" class="form-control" rows="2" placeholder="Optional…"></textarea></div>
+            <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3" style="background:var(--primary-lt);">
+              <span class="fw-bold">Estimated Total</span>
+              <div><span class="fw-bold text-primary" id="priceEstimate">—</span> <span id="availBadge"></span></div>
+            </div>
+            {% if vehicle.security_deposit > 0 %}<p class="text-muted mb-3" style="font-size:.8rem;"><i class="fas fa-info-circle me-1"></i>Security deposit ₹{{ vehicle.security_deposit }} (refundable)</p>{% endif %}
+            <button type="submit" class="btn btn-primary w-100 btn-lg"><i class="fas fa-calendar-check me-2"></i>Book This Vehicle</button>
+          </form>
+          {% else %}
+          <a href="/accounts/login/?next=/vehicles/{{ vehicle.id }}/" class="btn btn-primary w-100 btn-lg"><i class="fas fa-sign-in-alt me-2"></i>Login to Book</a>
+          {% endif %}
+        {% else %}<div class="text-center py-4 text-muted"><i class="fas fa-ban fa-2x mb-2 d-block text-danger"></i>Currently unavailable</div>{% endif %}
+        <div class="border-top pt-3 mt-3">
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar-circle">{{ vehicle.owner.first_name.0 }}</div>
+            <div><div style="font-size:.88rem;font-weight:600;">{{ vehicle.owner.get_full_name }}</div><small class="text-muted">Vehicle Owner</small></div>
+          </div>
+        </div>
+      </div>
+      {% if similar %}
+      <div class="mt-3">
+        <h6 class="mb-2">Similar Vehicles</h6>
+        {% for sv in similar %}
+        <a href="/vehicles/{{ sv.id }}/" class="text-decoration-none">
+          <div class="d-flex gap-2 p-2 border rounded mb-2 align-items-center" style="background:#fff;transition:background .2s;" onmouseover="this.style.background='var(--primary-lt)'" onmouseout="this.style.background='#fff'">
+            {% if sv.thumbnail %}<img src="{{ sv.thumbnail.url }}" style="width:60px;height:48px;object-fit:cover;border-radius:6px;">{% else %}<div style="width:60px;height:48px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-car text-muted"></i></div>{% endif %}
+            <div><div style="font-size:.85rem;font-weight:600;color:var(--dark);">{{ sv.brand }} {{ sv.model }}</div><div style="font-size:.75rem;color:var(--muted);">₹{{ sv.price_per_day }}/day &nbsp;<i class="fas fa-star text-warning"></i> {{ sv.avg_rating|floatformat:1 }}</div></div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

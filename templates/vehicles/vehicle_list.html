@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Rent Vehicles – SmartTourist{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row g-4">
+    <div class="col-lg-3">
+      <div class="filter-sidebar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0"><i class="fas fa-filter text-primary me-2"></i>Filters</h5>
+          <a href="/vehicles/" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+        <form method="get" id="filterForm">
+          <div class="filter-sec">
+            <div class="filter-title">📍 Destination</div>
+            <select name="location" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All Destinations</option>
+              {% for loc in locations %}<option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>{{ loc.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="filter-sec">
+            <div class="filter-title">🚗 Vehicle Type</div>
+            {% for val,label in vehicle_types %}
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="checkbox" name="vehicle_type" value="{{ val }}" id="t{{ val }}" onchange="this.form.submit()" {% if val in request.GET.vehicle_type %}checked{% endif %}>
+              <label class="form-check-label small" for="t{{ val }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="filter-sec">
+            <div class="filter-title">⛽ Fuel Type</div>
+            {% for val,label in fuel_types %}
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="checkbox" name="fuel_type" value="{{ val }}" id="f{{ val }}" onchange="this.form.submit()">
+              <label class="form-check-label small" for="f{{ val }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="filter-sec">
+            <div class="filter-title">💰 Price / Day</div>
+            <div class="row g-2">
+              <div class="col-6"><input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min ₹" value="{{ request.GET.min_price }}" onblur="this.form.submit()"></div>
+              <div class="col-6"><input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max ₹" value="{{ request.GET.max_price }}" onblur="this.form.submit()"></div>
+            </div>
+          </div>
+          <div class="filter-sec">
+            <div class="filter-title">📊 Sort</div>
+            <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="-avg_rating">Top Rated</option>
+              <option value="price_per_day">Price: Low→High</option>
+              <option value="-price_per_day">Price: High→Low</option>
+              <option value="-total_bookings">Most Popular</option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><h4 class="mb-0">Available Vehicles</h4><small class="text-muted">{{ page_obj.paginator.count }} found</small></div>
+        {% if user.is_authenticated and user.is_vehicle_owner %}<a href="/vehicles/vendor/add/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>List Vehicle</a>{% endif %}
+      </div>
+      {% if page_obj %}
+      <div class="row g-4">
+        {% for v in page_obj %}
+        <div class="col-md-6 col-xl-4">
+          <div class="listing-card">
+            <div class="listing-img-wrap">
+              <a href="/vehicles/{{ v.id }}/">
+                {% if v.thumbnail %}<img src="{{ v.thumbnail.url }}" alt="{{ v.name }}" class="listing-img">{% else %}<i class="fas fa-car fa-3x text-muted opacity-25"></i>{% endif %}
+              </a>
+              <div class="listing-badges"><span class="badge bg-primary">{{ v.get_vehicle_type_display }}</span>{% if v.is_featured %}<span class="badge bg-warning text-dark">Featured</span>{% endif %}</div>
+              <button class="btn-fav {% if v.id in fav_ids %}active{% endif %}" onclick="toggleFav('vehicle',{{ v.id }},this)"><i class="{% if v.id in fav_ids %}fas{% else %}far{% endif %} fa-heart"></i></button>
+            </div>
+            <div class="listing-body">
+              <div class="listing-loc"><i class="fas fa-map-marker-alt me-1"></i>{{ v.location }}</div>
+              <h5 class="listing-title">{{ v.brand }} {{ v.model }} ({{ v.year }})</h5>
+              <div class="listing-meta">
+                <span><i class="fas fa-gas-pump me-1"></i>{{ v.get_fuel_type_display }}</span>
+                <span><i class="fas fa-users me-1"></i>{{ v.seating_capacity }} seats</span>
+                <span><i class="fas fa-cog me-1"></i>{{ v.get_transmission_display }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mb-2">{% for f in v.get_features_list|slice:":3" %}<span class="tag">{{ f }}</span>{% endfor %}</div>
+              <div class="listing-footer">
+                <div><span class="price-main">₹{{ v.price_per_day }}</span><span class="price-unit">/day</span><div style="font-size:.75rem;color:var(--muted);">₹{{ v.price_per_hour }}/hr</div></div>
+                <div class="ms-auto" style="font-size:.88rem;"><i class="fas fa-star text-warning"></i> {{ v.avg_rating|floatformat:1 }}</div>
+                <a href="/vehicles/{{ v.id }}/" class="btn btn-sm btn-primary">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if page_obj.has_other_pages %}
+      <nav class="mt-4"><ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+        {% for n in page_obj.paginator.page_range %}{% if page_obj.number == n %}<li class="page-item active"><span class="page-link">{{ n }}</span></li>{% elif n > page_obj.number|add:"-3" and n < page_obj.number|add:"3" %}<li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>{% endif %}{% endfor %}
+        {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+      </ul></nav>
+      {% endif %}
+      {% else %}<div class="text-center py-5 text-muted"><i class="fas fa-car fa-4x mb-3 d-block opacity-25"></i><h5>No vehicles found</h5><a href="/vehicles/" class="btn btn-primary mt-2">Clear Filters</a></div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

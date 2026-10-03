@@ -1,0 +1,62 @@
+{% extends 'base.html' %}{% block title %}Admin Dashboard – SmartTourist{% endblock %}
+{% block extra_css %}<style>.pdot{width:8px;height:8px;background:#e74c3c;border-radius:50%;display:inline-block;margin-left:4px}</style>{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    {% include 'admin/_sidebar.html' with active_nav='dashboard' %}
+  </aside>
+  <div class="admin-main">
+    <button class="admin-mobile-toggle d-lg-none mb-3" onclick="toggleAdminSidebar()"><i class="fas fa-bars me-2"></i>Menu</button>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div><h1 class="admin-title mb-0">Dashboard</h1><p class="text-muted mb-0">Welcome, {{ request.user.first_name }}. Here's what's happening.</p></div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon p"><i class="fas fa-users"></i></div><div><div class="sc-val">{{ stats.total_users }}</div><div class="sc-lbl">Tourists</div><small class="text-success">+{{ stats.new_users_30d }} this month</small></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon a"><i class="fas fa-car"></i></div><div><div class="sc-val">{{ stats.total_vehicles }}</div><div class="sc-lbl">Vehicles</div><small class="text-warning">{{ stats.pending_v }} pending</small></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon s"><i class="fas fa-hotel"></i></div><div><div class="sc-val">{{ stats.total_hotels }}</div><div class="sc-lbl">Hotels</div><small class="text-warning">{{ stats.pending_h }} pending</small></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon i"><i class="fas fa-rupee-sign"></i></div><div><div class="sc-val">₹{{ stats.monthly_rev|floatformat:0 }}</div><div class="sc-lbl">Monthly Revenue</div><small class="text-muted">Last 30 days</small></div></div></div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-lg-8"><div class="chart-card"><div class="chart-title"><i class="fas fa-chart-bar text-primary me-2"></i>Monthly Bookings (Last 6 Months)</div><div style="height:280px;"><canvas id="bookingChart"></canvas></div></div></div>
+      <div class="col-lg-4"><div class="chart-card"><div class="chart-title"><i class="fas fa-chart-line text-success me-2"></i>Revenue Trend (7 Days)</div><div style="height:280px;"><canvas id="revenueChart"></canvas></div></div></div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-lg-6"><div class="chart-card"><div class="chart-title"><i class="fas fa-map-marker-alt text-danger me-2"></i>Destination Stats</div><table class="smart-table w-100"><thead><tr><th>Destination</th><th>Vehicles</th><th>Hotels</th></tr></thead><tbody>{% for l in location_stats %}<tr><td><strong>{{ l.name }}</strong></td><td>{{ l.v_cnt }}</td><td>{{ l.h_cnt }}</td></tr>{% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No data yet</td></tr>{% endfor %}</tbody></table></div></div>
+      <div class="col-lg-6"><div class="chart-card"><div class="chart-title"><i class="fas fa-users text-info me-2"></i>Recent Registrations</div><table class="smart-table w-100"><thead><tr><th>User</th><th>Role</th><th>Joined</th></tr></thead><tbody>{% for u in recent_users %}<tr><td><div class="d-flex align-items-center gap-2"><div class="avatar-circle" style="width:28px;height:28px;font-size:.75rem;">{{ u.first_name.0 }}</div>{{ u.get_full_name }}</div></td><td><span class="badge bg-primary">{{ u.get_role_display }}</span></td><td>{{ u.date_joined|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="3" class="text-center text-muted py-3">No users yet</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+    <!-- Pending Approvals -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="fas fa-clipboard-check text-warning me-2"></i>Pending Approvals</h5>
+      <a href="/admin-panel/approvals/" class="btn btn-sm btn-outline-primary">View All Approvals</a>
+    </div>
+    {% if pending_vehicles %}
+    <div class="chart-card mb-4" id="pendingVehicles"><div class="d-flex justify-content-between align-items-center mb-3"><div class="chart-title mb-0"><i class="fas fa-car text-warning me-2"></i>Pending Vehicles ({{ pending_vehicles|length }})</div></div>
+    <table class="smart-table w-100"><thead><tr><th>Vehicle</th><th>Owner</th><th>Location</th><th>Price/Day</th><th>Action</th></tr></thead><tbody>
+    {% for v in pending_vehicles %}<tr><td><strong>{{ v.brand }} {{ v.model }}</strong><br><small class="text-muted">{{ v.get_vehicle_type_display }}</small></td><td>{{ v.owner.get_full_name }}</td><td>{{ v.location }}</td><td>₹{{ v.price_per_day }}</td><td><a href="/admin-panel/approve/vehicle/{{ v.id }}/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+    </tbody></table></div>{% endif %}
+    {% if pending_hotels %}
+    <div class="chart-card mb-4" id="pendingHotels"><div class="chart-title mb-3"><i class="fas fa-hotel text-warning me-2"></i>Pending Hotels ({{ pending_hotels|length }})</div>
+    <table class="smart-table w-100"><thead><tr><th>Hotel</th><th>Owner</th><th>City</th><th>Category</th><th>Action</th></tr></thead><tbody>
+    {% for h in pending_hotels %}<tr><td><strong>{{ h.name }}</strong></td><td>{{ h.owner.get_full_name }}</td><td>{{ h.city }}</td><td>{{ h.get_category_display }}</td><td><a href="/admin-panel/approve/hotel/{{ h.id }}/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+    </tbody></table></div>{% endif %}
+    {% if pending_guides %}
+    <div class="chart-card mb-4" id="pendingGuides"><div class="chart-title mb-3"><i class="fas fa-user-tie text-warning me-2"></i>Pending Guides ({{ pending_guides|length }})</div>
+    <table class="smart-table w-100"><thead><tr><th>Guide</th><th>Expertise</th><th>Languages</th><th>Price/Day</th><th>Action</th></tr></thead><tbody>
+    {% for g in pending_guides %}<tr><td><strong>{{ g.name }}</strong></td><td>{{ g.get_expertise_display }}</td><td>{{ g.languages }}</td><td>₹{{ g.price_per_day }}</td><td><a href="/admin-panel/approve/guide/{{ g.id }}/" class="btn btn-sm btn-success">✓ Approve</a></td></tr>{% endfor %}
+    </tbody></table></div>{% endif %}
+    {% if not pending_vehicles and not pending_hotels and not pending_guides %}
+    <div class="chart-card mb-4 text-center text-muted py-4"><i class="fas fa-check-circle fa-2x mb-2 d-block text-success"></i>Nothing pending right now — all caught up!</div>
+    {% endif %}
+    <div class="chart-card"><div class="d-flex justify-content-between align-items-center mb-3"><div class="chart-title mb-0"><i class="fas fa-calendar-check text-primary me-2"></i>Recent Bookings</div><a href="/admin-panel/bookings/" class="btn btn-sm btn-outline-primary">View All</a></div>
+    <table class="smart-table w-100"><thead><tr><th>Booking ID</th><th>Tourist</th><th>Vehicle</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+    {% for b in recent_vb %}<tr><td><code>{{ b.booking_id }}</code></td><td>{{ b.tourist.get_full_name }}</td><td>{{ b.vehicle.brand }} {{ b.vehicle.model }}</td><td><strong>₹{{ b.total_amount }}</strong></td><td><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span></td><td>{{ b.created_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No bookings yet</td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+</div>{% endblock %}
+{% block extra_js %}<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  initBookingChart({{ monthly_labels|safe }},{{ monthly_vb|safe }},{{ monthly_hb|safe }},{{ monthly_gb|safe }});
+  fetch('/admin-panel/api/analytics/').then(r=>r.json()).then(d=>initRevenueChart(d.revenue_labels,d.revenue_data)).catch(()=>{});
+  document.querySelectorAll('.sc-val').forEach(el=>{const t=parseInt(el.textContent.replace(/[^0-9]/g,''));if(!isNaN(t)&&t>0){let c=0,s=Math.ceil(t/40);const i=setInterval(()=>{c=Math.min(c+s,t);el.textContent=el.textContent.includes('₹')?'₹'+c.toLocaleString():c.toLocaleString();if(c>=t)clearInterval(i);},30);}});
+});
+</script>{% endblock %}

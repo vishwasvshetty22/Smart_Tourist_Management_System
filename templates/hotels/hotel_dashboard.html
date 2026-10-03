@@ -1,0 +1,51 @@
+{% extends 'base.html' %}{% block title %}Hotel Dashboard{% endblock %}{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4"><div><h2 style="font-family:var(--ff-head);">Hotel Owner Dashboard 🏨</h2><p class="text-muted mb-0">Manage listings, rooms & bookings</p></div><a href="/hotels/hotel-dashboard/add/" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add Hotel</a></div>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon p"><i class="fas fa-hotel"></i></div><div><div class="sc-val">{{ stats.total_hotels }}</div><div class="sc-lbl">My Hotels</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon s"><i class="fas fa-door-open"></i></div><div><div class="sc-val">{{ stats.total_rooms }}</div><div class="sc-lbl">Rooms</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon a"><i class="fas fa-clock"></i></div><div><div class="sc-val">{{ stats.pending_bookings }}</div><div class="sc-lbl">Pending</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="sc-icon i"><i class="fas fa-rupee-sign"></i></div><div><div class="sc-val">₹{{ stats.total_earnings|floatformat:0 }}</div><div class="sc-lbl">Earnings</div></div></div></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="chart-card"><h5 class="chart-title">My Hotels</h5>
+        {% for h in hotels %}
+        <div class="border rounded p-2 mb-3">
+          <div class="d-flex gap-2 align-items-center mb-2">
+            <div style="flex:1;"><div style="font-size:.88rem;font-weight:600;">{{ h.name }}</div><div style="font-size:.75rem;color:var(--muted);">{{ h.city }} · from ₹{{ h.min_price }}/night</div></div>
+            <div>{% if h.is_approved %}<span class="badge bg-success">Live</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}</div>
+          </div>
+          <div style="font-size:.78rem;" class="mb-2">
+            {% for room in h.rooms.all %}
+            <div class="d-flex justify-content-between align-items-center border-top py-1">
+              <span>Room {{ room.room_number }} ({{ room.get_room_type_display }}) – ₹{{ room.price_per_night }}/night</span>
+              <button class="btn btn-sm {% if room.is_available %}btn-outline-success{% else %}btn-outline-secondary{% endif %}" style="padding:1px 6px;font-size:.7rem;" onclick="toggleRoom({{ room.id }})">{% if room.is_available %}Available{% else %}Unavailable{% endif %}</button>
+            </div>
+            {% empty %}
+            <div class="text-muted border-top py-1">No rooms added yet — tourists can't book until you add one.</div>
+            {% endfor %}
+          </div>
+          <a href="/hotels/hotel-dashboard/{{ h.id }}/add-room/" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-plus me-1"></i>Add Room</a>
+        </div>
+        {% empty %}<div class="text-center text-muted py-3">No hotels yet.</div>{% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="chart-card"><h5 class="chart-title">Recent Bookings</h5><div class="table-responsive"><table class="smart-table w-100"><thead><tr><th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Room</th><th>Dates</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        {% for b in bookings %}
+        <tr>
+          <td><code>{{ b.booking_id }}</code></td>
+          <td>{{ b.tourist.get_full_name }}</td>
+          <td>{{ b.hotel.name }}</td>
+          <td>{{ b.room.get_room_type_display }}</td>
+          <td style="font-size:.82rem;">{{ b.check_in_date|date:"d M" }} – {{ b.check_out_date|date:"d M Y" }}</td>
+          <td><strong>₹{{ b.total_amount }}</strong></td>
+          <td><span class="sbadge sb-{{ b.status }}">{{ b.get_status_display }}</span></td>
+          <td>{% if b.status == 'pending' %}<button class="btn btn-success btn-sm" style="padding:2px 8px;font-size:.75rem;" onclick="manageHotelBooking({{ b.id }},'confirm',this)">✓</button> <button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:.75rem;" onclick="manageHotelBooking({{ b.id }},'cancel',this)">✗</button>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="8" class="text-center text-muted py-3">No bookings yet</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div>
+  </div>
+</div>{% endblock %}
