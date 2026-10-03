@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI-Based Smart Tourist Travel & Rental Management Platform
 
 **SmartTourist** — Full-stack Django web app with SQLite, AI chatbot, trip planner, vehicle rental, hotel booking & tour guide hiring.
@@ -204,3 +205,7 @@ WEATHER_API_KEY = 'your_openweathermap_key'
 ---
 
 *MCA Final Year Project 2024-25 | SmartTourist Platform*
+=======
+# Smart_Tourist_Management_System
+ Full-stack Django web app with SQLite, AI chatbot, trip planner, vehicle rental, hotel booking &amp; tour guide hiring.
+>>>>>>> 044cbc65a2214c6c131544aeed17f01130df6a15
